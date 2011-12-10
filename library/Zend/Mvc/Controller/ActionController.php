@@ -7,7 +7,7 @@ use ArrayObject,
     Zend\EventManager\EventCollection,
     Zend\EventManager\EventDescription as Event,
     Zend\EventManager\EventManager,
-    Zend\Http\Response as HttpResponse,
+    Zend\Http\PhpEnvironment\Response as HttpResponse,
     Zend\Loader\Broker,
     Zend\Loader\Pluggable,
     Zend\Stdlib\Dispatchable,
@@ -23,6 +23,8 @@ use ArrayObject,
  */
 abstract class ActionController implements Dispatchable, InjectApplicationEvent, LocatorAware, Pluggable
 {
+    //use \Zend\EventManager\ProvidesEvents;
+
     protected $broker;
     protected $event;
     protected $events;

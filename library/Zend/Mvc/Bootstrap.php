@@ -3,10 +3,10 @@ namespace Zend\Mvc;
 
 use Zend\Di\Configuration as DiConfiguration,
     Zend\Di\Di,
+    Zend\Config\Config,
     Zend\EventManager\EventCollection as Events,
     Zend\EventManager\EventManager,
     Zend\EventManager\StaticEventManager,
-    Zend\Module\Manager as ModuleManager,
     Zend\Mvc\Router\Http\TreeRouteStack as Router;
 
 class Bootstrap implements Bootstrapper
@@ -17,11 +17,6 @@ class Bootstrap implements Bootstrapper
     protected $config;
 
     /**
-     * @var ModuleManager
-     */
-    protected $modules;
-
-    /**
      * @var EventCollection
      */
     protected $events;
@@ -29,15 +24,12 @@ class Bootstrap implements Bootstrapper
     /**
      * Constructor
      *
-     * Populates $config from the $modules "getMergedConfig" method.
-     * 
-     * @param  ModuleManager $modules 
+     * @param Config $config 
      * @return void
      */
-    public function __construct(ModuleManager $modules)
+    public function __construct(Config $config)
     {
-        $this->modules = $modules; 
-        $this->config  = $modules->getMergedConfig();
+        $this->config = $config; 
     }
 
     /**
@@ -92,6 +84,7 @@ class Bootstrap implements Bootstrapper
         $this->setupEvents($application);
     }
 
+
     /**
      * Sets up the locator based on the configuration provided
      * 
@@ -125,7 +118,7 @@ class Bootstrap implements Bootstrapper
     /**
      * Trigger the "bootstrap" event
      *
-     * Triggers with the keys "application" and "modules", the latter pointing
+     * Triggers with the keys "application" and "config", the latter pointing
      * to the Module Manager attached to the bootstrap.
      * 
      * @param  AppContext $application 
@@ -135,7 +128,7 @@ class Bootstrap implements Bootstrapper
     {
         $params = array(
             'application' => $application,
-            'modules'     => $this->modules,
+            'config'      => $this->config,
         );
         $this->events()->trigger('bootstrap', $this, $params);
     }

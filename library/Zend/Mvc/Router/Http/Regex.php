@@ -27,8 +27,7 @@ namespace Zend\Mvc\Router\Http;
 use Traversable,
     Zend\Stdlib\IteratorToArray,
     Zend\Stdlib\RequestDescription as Request,
-    Zend\Mvc\Router\Exception,
-    Zend\Mvc\Router\Route;
+    Zend\Mvc\Router\Exception;
 
 /**
  * Regex route.
@@ -65,6 +64,13 @@ class Regex implements Route
     protected $spec;
     
     /**
+     * List of assembled parameters.
+     * 
+     * @var array
+     */
+    protected $assembledParams = array();
+    
+    /**
      * Create a new regex route.
      * 
      * @param  string $regex
@@ -88,13 +94,10 @@ class Regex implements Route
      */
     public static function factory($options = array())
     {
-        if (!is_array($options) && !$options instanceof Traversable) {
-            throw new Exception\InvalidArgumentException(__METHOD__ . ' expects an array or Traversable set of options');
-        }
-
-        // Convert options to array if Traversable object not implementing ArrayAccess
-        if ($options instanceof Traversable && !$options instanceof ArrayAccess) {
+        if ($options instanceof Traversable) {
             $options = IteratorToArray::convert($options);
+        } elseif (!is_array($options)) {
+            throw new Exception\InvalidArgumentException(__METHOD__ . ' expects an array or Traversable set of options');
         }
 
         if (!isset($options['regex'])) {
@@ -161,17 +164,31 @@ class Regex implements Route
      */
     public function assemble(array $params = array(), array $options = array())
     {
-        $url    = $this->spec;
-        $params = array_merge($this->defaults, $params);
+        $url                   = $this->spec;
+        $mergedParams          = array_merge($this->defaults, $params);
+        $this->assembledParams = array();
         
-        foreach ($params as $key => $value) {
+        foreach ($mergedParams as $key => $value) {
             $spec = '%' . $key . '%';
             
             if (strpos($url, $spec) !== false) {
                 $url = str_replace($spec, urlencode($value), $url);
+                
+                $this->assembledParams[] = $key;
             }
         }
         
         return $url;
+    }
+    
+    /**
+     * getAssembledParams(): defined by Route interface.
+     * 
+     * @see    Route::getAssembledParams
+     * @return array
+     */
+    public function getAssembledParams()
+    {
+        return $this->assembledParams;
     }
 }

@@ -2,6 +2,9 @@
 
 namespace Zend\Loader;
 
+// Grab SplAutoloader interface
+require_once __DIR__ . '/SplAutoloader.php';
+
 use SplFileInfo,
     Traversable;
 
@@ -33,6 +36,11 @@ class ModuleAutoloader implements SplAutoloader
         'tar.bz2',
         'zip',
     );
+
+    /**
+     * @var array An array of module classes to their containing files
+     */
+    protected $moduleClassMap = array();
 
     /**
      * Constructor
@@ -124,6 +132,7 @@ class ModuleAutoloader implements SplAutoloader
             // Found directory with Module.php in it
             require_once $file->getRealPath();
             if (class_exists($class)) {
+                $this->moduleClassMap[$class] = $file->getRealPath();
                 return $class;
             }
         }
@@ -151,6 +160,7 @@ class ModuleAutoloader implements SplAutoloader
             // First see if the stub makes the Module class available
             require_once $file->getRealPath();
             if (class_exists($class)) {
+                $this->moduleClassMap[$class] = $file->getRealPath();
                 return $class;
             }
         }
@@ -160,6 +170,7 @@ class ModuleAutoloader implements SplAutoloader
         if ($moduleFile->isReadable() && $moduleFile->isFile()) {
             require_once $moduleClassFile;
             if (class_exists($class)) {
+                $this->moduleClassMap[$class] = $moduleClassFile;
                 return $class;
             }
         }
@@ -172,6 +183,7 @@ class ModuleAutoloader implements SplAutoloader
         if ($moduleFile->isReadable() && $moduleFile->isFile()) {
             require_once $moduleClassFile;
             if (class_exists($class)) {
+                $this->moduleClassMap[$class] = $moduleClassFile;
                 return $class;
             }
         }
