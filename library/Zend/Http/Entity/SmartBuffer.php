@@ -39,26 +39,26 @@ class SmartBuffer extends Entity implements Writable, Rewindable
 
         $this->fromString('');
     }
-    
+
     /**
      * Set entity content from a string and rewind it
-     * 
+     *
      * @param string $content
      */
     public function fromString($content)
     {
-        if ($this->stream) { 
+        if ($this->stream) {
             fclose($this->stream);
         }
-        
+
         $this->stream = fopen('php://temp/maxmemory:' . $this->maxMemory, 'r+');
         $this->write($content);
         $this->rewind();
     }
-    
+
     /**
      * Read a chunk of data from the entity
-     * 
+     *
      * @see Zend\Http\Entity.Entity::read()
      */
     public function read()
@@ -69,7 +69,7 @@ class SmartBuffer extends Entity implements Writable, Rewindable
 
     /**
      * Write data to the entity
-     * 
+     *
      * @see Zend\Http\Entity.Writable::write()
      */
     public function write($data)
@@ -79,7 +79,7 @@ class SmartBuffer extends Entity implements Writable, Rewindable
 
     /**
      * Rewing cursor position to entity beginning
-     * 
+     *
      * @see Zend\Http\Entity.Rewindable::rewind()
      */
     public function rewind()
@@ -89,10 +89,10 @@ class SmartBuffer extends Entity implements Writable, Rewindable
 
     /**
      * Close open temp stream when entity object is desctroyed
-     * 
+     *
      */
     public function __destruct()
     {
         fclose($this->stream);
-    }    
+    }
 }

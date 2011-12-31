@@ -31,8 +31,8 @@ class String extends Entity implements Writable, Rewindable
     }
 
     /**
-     * Write data to the stream 
-     * 
+     * Write data to the stream
+     *
      * @see Zend\Http\Entity.Writable::write()
      */
     public function write($data)
@@ -41,7 +41,7 @@ class String extends Entity implements Writable, Rewindable
         $this->data .= $data;
         return $dataLen;
     }
-    
+
     /**
      * Set entity contents from string
      *
@@ -53,8 +53,8 @@ class String extends Entity implements Writable, Rewindable
     }
 
     /**
-     * Rewind entity 
-     * 
+     * Rewind entity
+     *
      * @see Zend\Http\Entity.Rewindable::rewind()
      */
     public function rewind()
