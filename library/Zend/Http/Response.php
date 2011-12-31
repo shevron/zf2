@@ -353,14 +353,6 @@ class Response extends Message implements ResponseDescription
     {
         $body = (string) $this->getContent();
 
-        $transferEncoding = $this->headers()->get('Transfer-Encoding');
-
-        if (!empty($transferEncoding)) {
-            if (strtolower($transferEncoding->getFieldValue()) == 'chunked') {
-                $body = $this->decodeChunkedBody($body);
-            }
-        }
-
         $contentEncoding = $this->headers()->get('Content-Encoding');
 
         if (!empty($contentEncoding)) {
@@ -473,43 +465,6 @@ class Response extends Message implements ResponseDescription
         $str .= "\r\n";
         $str .= $this->getBody();
         return $str;
-    }
-
-    /**
-     * Decode a "chunked" transfer-encoded body and return the decoded text
-     *
-     * @param string $body
-     * @return string
-     */
-    protected function decodeChunkedBody($body)
-    {
-        $decBody = '';
-
-        // If mbstring overloads substr and strlen functions, we have to
-        // override it's internal encoding
-        if (function_exists('mb_internal_encoding') &&
-           ((int) ini_get('mbstring.func_overload')) & 2) {
-
-            $mbIntEnc = mb_internal_encoding();
-            mb_internal_encoding('ASCII');
-        }
-
-        while (trim($body)) {
-            if (! preg_match("/^([\da-fA-F]+)[^\r\n]*\r\n/sm", $body, $m)) {
-                throw new Exception\RuntimeException("Error parsing body - doesn't seem to be a chunked message");
-            }
-
-            $length = hexdec(trim($m[1]));
-            $cut = strlen($m[0]);
-            $decBody .= substr($body, $cut, $length);
-            $body = substr($body, $cut + $length + 2);
-        }
-
-        if (isset($mbIntEnc)) {
-            mb_internal_encoding($mbIntEnc);
-        }
-
-        return $decBody;
     }
 
     /**
