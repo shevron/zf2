@@ -556,15 +556,15 @@ class Socket implements Transport
 
         // Read body based on provided headers
         if ($response->headers()->has('transfer-encoding')) {
-            $transferEncoding = $response->headers()->get('transfer-encoding')->getFieldValue();
-            if ($transferEncoding != 'chunked') {
-                throw new Exception\ProtocolException("Unknown content transfer encoding: {$transferEncoding}");
+            $transferEncoding = $response->headers()->get('transfer-encoding');
+            if ($transferEncoding->getFieldValue() != 'chunked') {
+                throw new Exception\ProtocolException("Unknown content transfer encoding: {$transferEncoding->getFieldValue()}");
             }
 
             // Read chunked body
             $this->log("Reading repsonse body using chunked transfer encoding", Logger::INFO);
             $response->setContent($this->readChunkedBody());
-            $response->unsetHeader('transfer-encoding');
+            $response->headers()->removeHeader($transferEncoding);
 
         } elseif ($response->headers()->has('content-length')) {
             $length = (int) $response->headers()->get('content-length')->getFieldValue();
@@ -574,6 +574,7 @@ class Socket implements Transport
         } else {
             // Fallback: read until end of file
             $this->log("Reading repsonse body until server closes connection", Logger::INFO);
+            $body = '';
             while (! feof($this->socket)) {
                 $chunk = $this->readLength(4096);
                 if ($chunk !== false) {
