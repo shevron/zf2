@@ -351,20 +351,7 @@ class Response extends Message implements ResponseDescription
      */
     public function getBody()
     {
-        $body = (string) $this->getContent();
-
-        $contentEncoding = $this->headers()->get('Content-Encoding');
-
-        if (!empty($contentEncoding)) {
-            $contentEncoding = $contentEncoding->getFieldValue();
-            if ($contentEncoding =='gzip') {
-                $body = $this->decodeGzip($body);
-            } elseif ($contentEncoding == 'deflate') {
-                 $body = $this->decodeDeflate($body);
-            }
-        }
-
-        return $body;
+        return (string) $this->getContent();
     }
 
     /**
@@ -466,60 +453,4 @@ class Response extends Message implements ResponseDescription
         $str .= $this->getBody();
         return $str;
     }
-
-    /**
-     * Decode a gzip encoded message (when Content-encoding = gzip)
-     *
-     * Currently requires PHP with zlib support
-     *
-     * @param string $body
-     * @return string
-     */
-    protected function decodeGzip($body)
-    {
-        if (!function_exists('gzinflate')) {
-            throw new Exception\RuntimeException(
-                'zlib extension is required in order to decode "gzip" encoding'
-            );
-        }
-
-        return gzinflate(substr($body, 10));
-    }
-
-    /**
-     * Decode a zlib deflated message (when Content-encoding = deflate)
-     *
-     * Currently requires PHP with zlib support
-     *
-     * @param string $body
-     * @return string
-     */
-    protected function decodeDeflate($body)
-    {
-        if (!function_exists('gzuncompress')) {
-            throw new Exception\RuntimeException(
-                'zlib extension is required in order to decode "deflate" encoding'
-            );
-        }
-
-        /**
-         * Some servers (IIS ?) send a broken deflate response, without the
-         * RFC-required zlib header.
-         *
-         * We try to detect the zlib header, and if it does not exsit we
-         * teat the body is plain DEFLATE content.
-         *
-         * This method was adapted from PEAR HTTP_Request2 by (c) Alexey Borzov
-         *
-         * @link http://framework.zend.com/issues/browse/ZF-6040
-         */
-        $zlibHeader = unpack('n', substr($body, 0, 2));
-
-        if ($zlibHeader[1] % 31 == 0) {
-            return gzuncompress($body);
-        } else {
-            return gzinflate($body);
-        }
-    }
-
 }

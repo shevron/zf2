@@ -12,6 +12,17 @@ use Zend\Http\Request,
 class Socket implements Transport
 {
     /**
+     * Content encoding filters registry
+     *
+     * @var array
+     */
+    static protected $contentEncodingFilters = array(
+        'identity' => 'Zend\Http\Transport\Filter\Identity',
+        'gzip'     => 'Zend\Http\Transport\Filter\Gzip',
+        'deflate'  => 'Zend\Http\Transport\Filter\Deflate',
+    );
+    
+    /**
      * Whether to use keep-alive if server allows it
      *
      * HTTP Keep-alive allows sending multiple HTTP request on a single TCP
@@ -141,9 +152,19 @@ class Socket implements Transport
     /**
      * Logger object
      *
-     * @var \Zend\Log\Logger
+     * @var Zend\Log\Logger
      */
     protected $logger                = null;
+    
+    /**
+     * A content encoding filter object 
+     * 
+     * Content encoding filters are used to handle Content-Encoding of the 
+     * HTTP response body 
+     * 
+     * @var null|Zend\Http\Transport\Filter\Filter
+     */
+    protected $contentEncodingFilter = null;
 
     /**
      * Create a new socket transport object
@@ -550,9 +571,7 @@ class Socket implements Transport
         }
         */
 
-        if ($response->headers()->has('content-encoding')) {
-            $this->handleContentEncoding($response, $response->headers()->get('content-encoding'));
-        }
+        $this->handleContentEncoding($response, $response->headers()->get('content-encoding'));
 
         // Read body based on provided headers
         if ($response->headers()->has('transfer-encoding')) {
@@ -578,33 +597,34 @@ class Socket implements Transport
             while (! feof($this->socket)) {
                 $chunk = $this->readLength(4096);
                 if ($chunk !== false) {
-                    $body .= $chunk;
+                    $body .= $this->contentEncodingFilter->filter($chunk);
                 }
             }
             $response->setContent($body);
         }
+        
+        // Remove content encoding filter, if set
+        if ($this->contentEncodingFilter) {
+            $this->contentEncodingFilter = null;
+        }
     }
     
-    protected function handleContentEncoding(Response $response, CEHeader $header)
+    protected function handleContentEncoding(Response $response, $header)
     {
-        $contentEnc = $header->getFieldValue();
-        $this->log("Got Content-Encoding header: $contentEnc", Logger::DEBUG);
+        if (! $header) { 
+            $this->contentEncodingFilter = new Filter\Identity();
+            return;
+        }
         
-        switch($contentEnc) { 
-            case 'identity':
-                // No special action is needed
-                $response->headers()->removeHeader($header);
-                break;
-                
-            case 'gzip':
-            case 'deflate':
-            case 'compress':
-                // Implement!
-                break;
-                
-            default:
-                // Unknown content encoding, ignore
-                break;
+        $contentEnc = $header->getFieldValue();
+        $this->log("Applying content encoding filter for '$contentEnc'", Logger::DEBUG);
+        
+        if (isset(static::$contentEncodingFilters[$contentEnc])) { 
+            $this->contentEncodingFilter = new static::$contentEncodingFilters[$contentEnc];
+            $response->headers()->removeHeader($header);
+        } else {
+            $this->contentEncodingFilter = new Filter\Identity();
+            $this->log("Unknown Content-Encoding: $contentEnc", Logger::NOTICE);
         }
     }
 
@@ -670,7 +690,7 @@ class Socket implements Transport
             }
             $chunk = $this->readLength($toRead);
             if ($chunk !== false) {
-                $body .= $chunk;
+                $body .= $this->contentEncodingFilter->filter($chunk);
             } else {
                 // TODO: handle error
                 break;
