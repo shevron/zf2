@@ -23,6 +23,24 @@ class Socket implements Transport
     );
 
     /**
+     * Whether to use keep-alive if server allows it
+     *
+     * HTTP Keep-alive allows sending multiple HTTP request on a single TCP
+     * connection, thus improving efficiency of consecutive requests to the
+     * same server.
+     *
+     * @var boolean
+     */
+    protected $keepAlive             = true;
+
+    /**
+     * Timeout in seconds for connecting to and reading from the server
+     *
+     * @var integer
+     */
+    protected $timeout               = 30;
+
+    /**
      * Options object
      *
      * @var Zend\Http\Transport\SocketOptions
@@ -53,6 +71,16 @@ class Socket implements Transport
      * @var resource
      */
     protected $context = null;
+
+    /**
+     * A content encoding filter object
+     *
+     * Content encoding filters are used to handle Content-Encoding of the
+     * HTTP response body
+     *
+     * @var Zend\Log\Logger
+     */
+    protected $logger                = null;
 
     /**
      * A content encoding filter object
