@@ -295,11 +295,12 @@ class Socket implements Transport
     /**
      * Send HTTP request and return the response
      *
-     * @see             Zend\Http\Transport\Transport::send()
-     * @param  $request Zend\Http\Request
-     * @return          Zend\Http\Response
+     * @see              Zend\Http\Transport\Transport::send()
+     * @param  $request  Zend\Http\Request
+     * @param  $response Zend\Http\Response
+     * @return           Zend\Http\Response
      */
-    public function send(Request $request)
+    public function send(Request $request, Response $response = null)
     {
         $this->log("Sending {$request->getMethod()} request to {$request->getUri()}", Logger::NOTICE);
 
@@ -313,7 +314,7 @@ class Socket implements Transport
         $this->sendRequest($request);
 
         // Read response
-        $response = $this->readResponse();
+        $response = $this->readResponse($response);
 
         if (! $this->keepAlive ||
            ($response->headers()->has('connection') && 
@@ -482,15 +483,18 @@ class Socket implements Transport
     /**
      * Read HTTP response from server
      *
-     * @return Zend\Http\Response
-     * @throws Exception\ConnectionException
-     * @throws Exception\ProtocolException
+     * @param  $response Zend\Http\Response
+     * @return           Zend\Http\Response
+     * @throws           Exception\ConnectionException
+     * @throws           Exception\ProtocolException
      */
-    protected function readResponse()
+    protected function readResponse(Response $response = null)
     {
         $this->log("Reading response from server", Logger::INFO);
 
-        $response = new $this->responseClass; /* @var $response \Zend\Http\Response */
+        if (! $response instanceof Response) { 
+            $response = new $this->responseClass;
+        }
 
         // Read status line
         $line = $this->readLine();

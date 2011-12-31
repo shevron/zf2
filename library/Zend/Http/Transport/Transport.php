@@ -18,5 +18,5 @@ interface Transport
      * @param  Zend\Http\Reponse|string $response
      * @return Zend\Http\Response
      */
-    public function send(Request $request);
+    public function send(Request $request, Response $response = null);
 }

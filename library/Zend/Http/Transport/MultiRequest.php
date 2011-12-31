@@ -17,5 +17,5 @@ interface MultiRequest extends Transport
      * @param  Zend\Http\Reponse|string $responseClass
      * @return array
      */
-    public function sendMulti(RequestPool $requestPoll);
+    public function sendMulti(RequestPool $requestPool);
 }
