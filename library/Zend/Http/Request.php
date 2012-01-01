@@ -175,12 +175,11 @@ class Request extends Message implements RequestDescription
      */
     public function setUri($uri)
     {
-        $uri = new HttpUri($uri);
-        if (! $uri->isValid()) { 
-            throw new Exception\InvalidArgumentException("Provided URI '$uri' is not an absolute, valid HTTP URI");
+        if (! $uri instanceof HttpUri) {
+            $uri = new HttpUri($uri);
         }
         
-        $this->uri = $uri->normalize();
+        $this->uri = $uri;
         
         return $this;
     }
