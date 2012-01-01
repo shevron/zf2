@@ -99,7 +99,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         $request = new Request();
 
-        $this->setExpectedException('Zend\Http\Exception\InvalidArgumentException', 'must be an instance of');
+        $this->setExpectedException('Zend\Uri\Exception\InvalidArgumentException', 'Expecting a string or a URI object, received ');
         $request->setUri(new \stdClass());
     }
 
