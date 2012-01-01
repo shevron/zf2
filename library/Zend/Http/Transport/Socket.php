@@ -58,18 +58,6 @@ class Socket implements Transport
     protected $responseBodyClass     = '\Zend\Http\Entity\SmartBuffer';
 
     /**
-     * Whether to attempt handling content encoding (gzip, deflate etc.)
-     *
-     * If content encoding is not handled, the data from the server is written
-     * as is to the response body, and headers are not modified. Otherwise, the
-     * transport will notify the body object that written data is encoded and
-     * will remove the Content-encoding header from the response.
-     *
-     * @var boolean
-     */
-    //protected $handleContentEncoding = true;
-
-    /**
      * PHP Stream context
      *
      * This can be used to apply additional options on the PHP stream wrapper
@@ -199,12 +187,6 @@ class Socket implements Transport
         if (isset($config['responseBodyClass'])) {
             $this->responseBodyClass = $config['responseBodyClass'];
         }
-
-        /*
-        if (isset($config['handleContentEncoding'])) {
-            $this->handleContentEncoding = (boolean) $config['handleContentEncoding'];
-        }
-        */
 
         if (isset($config['logger'])) {
             $this->logger = $config['logger'];
@@ -440,10 +422,15 @@ class Socket implements Transport
         // Write request headers
         $this->log("Sending request headers", Logger::INFO);
 
-        $uri = $request->uri();
+        $requestUri = $request->uri()->getPath();
+        if (! $requestUri) $requestUri = '/';
+
+        if ($query = $request->uri()->getQuery()) { 
+            $requestUri .= "?$query";
+        }
+        
     	$headers = $request->getMethod() . " " .
-    	           $uri->getPath() .
-    	           ($uri->getQuery() ? '?' . $uri->getQuery() : '') . " " .
+    	           $requestUri . " " . 
     	           "HTTP/" . $request->getVersion() . "\r\n" .
     			   $request->headers()->toString() . "\r\n";
 
