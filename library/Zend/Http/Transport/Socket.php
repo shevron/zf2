@@ -321,7 +321,17 @@ class Socket implements Transport
         }
 
         if (! $request->headers()->has('host')) {
-            $request->headers()->addHeaderLine('Host', $request->uri()->getHost());
+            $host = $request->uri()->getHost();
+            if ($host) {
+                $scheme = $request->uri()->getScheme();
+                $port = $request->uri()->getPort();
+                if (($scheme == 'http' && $port != 80) || 
+                    ($scheme == 'https' && $port != 443)) { 
+                    $host .= ":$port";
+                } 
+            }
+            
+            $request->headers()->addHeaderLine('Host', $host);
         }
     }
 
