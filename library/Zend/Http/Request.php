@@ -164,23 +164,24 @@ class Request extends Message implements RequestDescription
     }
 
     /**
-     * Set the URI/URL for this request, this can be a string or an instance of Zend\Uri\Http
+     * Set the URL for this request.
+     * 
+     * This must be a valid, absolute HTTP URI. If an object is provided, it 
+     * will be copied.
      *
+     * @param  string|Zend\Uri\Http $uri
+     * @return Zend\Http\Request
      * @throws Exception\InvalidArgumentException
-     * @param string|HttpUri $uri
-     * @return Request
      */
     public function setUri($uri)
     {
-        if (is_string($uri)) {
-            if (!\Zend\Uri\Uri::validateHost($uri)) {
-                throw new Exception\InvalidArgumentException('Invalid URI passed as string');
-            }
-        } elseif (!($uri instanceof \Zend\Uri\Http)) {
-            throw new Exception\InvalidArgumentException('URI must be an instance of Zend\Uri\Http or a string');
+        $uri = new HttpUri($uri);
+        if (! $uri->isValid()) { 
+            throw new Exception\InvalidArgumentException("Provided URI '$uri' is not an absolute, valid HTTP URI");
         }
-        $this->uri = $uri;
-
+        
+        $this->uri = $uri->normalize();
+        
         return $this;
     }
 
