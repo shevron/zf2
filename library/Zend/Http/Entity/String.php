@@ -7,16 +7,16 @@ use Zend\Http\Exception;
 class String extends Entity implements Writable, Rewindable
 {
     /**
-     * Temporary data stream
+     * Entity content
      *
-     * @var resource
+     * @var string
      */
     protected $data = '';
 
     /**
      * Position on string
      *
-     * @var unknown_type
+     * @var boolean
      */
     protected $isRead = false;
 
@@ -30,6 +30,11 @@ class String extends Entity implements Writable, Rewindable
         }
     }
 
+    /**
+     * Write data to the stream 
+     * 
+     * @see Zend\Http\Entity.Writable::write()
+     */
     public function write($data)
     {
         $dataLen = strlen($data);
@@ -37,11 +42,21 @@ class String extends Entity implements Writable, Rewindable
         return $dataLen;
     }
     
+    /**
+     * Set entity contents from string
+     *
+     * @see Zend\Http\Entity\Writable::fromString()
+     */
     public function fromString($content)
     {
         $this->write($content);
     }
 
+    /**
+     * Rewind entity 
+     * 
+     * @see Zend\Http\Entity.Rewindable::rewind()
+     */
     public function rewind()
     {
         $this->isRead = false;
