@@ -6,5 +6,5 @@ interface Writable
 {
     public function write($chunk);
 
-    public function setInputEncoding($encoding);
+    public function fromString($content);
 }
