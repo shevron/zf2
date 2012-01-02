@@ -146,6 +146,50 @@ class SocketTest extends \PHPUnit_Framework_TestCase
         $this->assertRegExp("/^Host: $expected\r\n/m", $requestStr);
     }
     
+    public function testReadResponseContentLength()
+    {
+        $transport = new MockSocketTransport();
+        
+        $request = new Request();
+        $request->setUri('http://localhost/');
+        
+        // Add a few bytes at the end of the pipe after the next response
+        $response = $this->getSimpleResponseString() . "--more data--";
+        $transport->setNextResponse($response);
+        
+        $response = $transport->send($request);
+        
+        $this->assertEquals('Hi!', $response->getBody());
+    }
+    
+    public function testReadResponseChunkedEncoding()
+    {
+        $transport = new MockSocketTransport();
+        
+        $request = new Request();
+        $request->setUri('http://localhost/');
+        
+        $transport->setNextResponse($this->getResponseFromFile('response-chunked-01.http'));
+        
+        $response = $transport->send($request);
+        
+        $this->assertEquals('25ca3d1bd09ae087507fb8cc71fa925b', md5($response->getBody()));
+    }
+    
+    public function testReadResponseConnectionClosed()
+    {
+        $transport = new MockSocketTransport();
+        
+        $request = new Request();
+        $request->setUri('http://localhost/');
+        
+        $transport->setNextResponse($this->getResponseFromFile('response-connectionclose-01.http'));
+        
+        $response = $transport->send($request);
+        
+        $this->assertEquals('25ca3d1bd09ae087507fb8cc71fa925b', md5($response->getBody()));
+    }
+    
     /**
      * Helper functions
      */
@@ -159,6 +203,11 @@ class SocketTest extends \PHPUnit_Framework_TestCase
                "Content-type: text/plain\r\n" . 
                "\r\n" . 
                "Hi!";
+    }
+    
+    protected function getResponseFromFile($file)
+    {
+        return file_get_contents(__DIR__ . '/_files/' . $file);
     }
     
     /**
