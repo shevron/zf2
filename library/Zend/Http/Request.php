@@ -90,11 +90,7 @@ class Request extends Message implements RequestDescription
 
         // first line must be Method/Uri/Version string
         $matches = null;
-        $methods = implode('|', array(
-            self::METHOD_OPTIONS, self::METHOD_GET, self::METHOD_HEAD, self::METHOD_POST,
-            self::METHOD_PUT, self::METHOD_DELETE, self::METHOD_TRACE, self::METHOD_CONNECT
-        ));
-        $regex = '^(?P<method>' . $methods . ')\s(?<uri>[^ ]*)(?:\sHTTP\/(?<version>\d+\.\d+)){0,1}';
+        $regex = '^(?P<method>\S+)\s(?<uri>[^ ]*)(?:\sHTTP\/(?<version>\d+\.\d+)){0,1}';
         $firstLine = array_shift($lines);
         if (!preg_match('#' . $regex . '#', $firstLine, $matches)) {
             throw new Exception\InvalidArgumentException('A valid request line was not found in the provided string');
@@ -145,11 +141,24 @@ class Request extends Message implements RequestDescription
      */
     public function setMethod($method)
     {
-        $method = strtoupper($method);
-        if (!defined('static::METHOD_'.$method)) {
-            throw new Exception\InvalidArgumentException('Invalid HTTP method passed');
+        if (! is_string($method)) {
+            throw new Exception\InvalidArgumentException('Invalid HTTP method passed: expecting a string');
         }
-        $this->method = $method;
+
+        // For known methods, set uppercase form
+        $upperMethod = strtoupper($method);
+        if (defined('static::METHOD_' . $upperMethod)) {
+            $this->method = $upperMethod;
+
+        // For custom methods validate and set as is
+        } else {
+            if (! static::validateRequestMethod($method)) {
+                throw new Exception\InvalidArgumentException("Invalid HTTP method '$method' passed");
+            }
+
+            $this->method = $method;
+        }
+
         return $this;
     }
 
@@ -165,8 +174,8 @@ class Request extends Message implements RequestDescription
 
     /**
      * Set the URL for this request.
-     * 
-     * This must be a valid, absolute HTTP URI. If an object is provided, it 
+     *
+     * This must be a valid, absolute HTTP URI. If an object is provided, it
      * will be copied.
      *
      * @param  string|Zend\Uri\Http $uri
@@ -178,9 +187,9 @@ class Request extends Message implements RequestDescription
         if (! $uri instanceof HttpUri) {
             $uri = new HttpUri($uri);
         }
-        
+
         $this->uri = $uri;
-        
+
         return $this;
     }
 
@@ -525,4 +534,21 @@ class Request extends Message implements RequestDescription
         return $this->toString();
     }
 
+    /**
+     * Validate an HTTP request method
+     *
+     * According to the HTTP/1.1 standard, valid request methods are composed
+     * of 1 or more TOKEN characters, which are printable ASCII characters
+     * other than "separator" characters
+     *
+     * @see http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.1
+     * @param  string $method
+     * @return boolean
+     */
+    public static function validateRequestMethod($method)
+    {
+        return (bool) preg_match(
+            '/^[^\x00-\x1f\x7f-\xff\(\)<>@,;:\\\\"<>\/\[\]\?={}\s]+$/', $method
+        );
+    }
 }

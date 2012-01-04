@@ -71,7 +71,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($headers, $request->headers());
     }
 
-    public function testRequestCanSetAndRetrieveValidMethod()
+    public function testRequestCanSetAndRetrieveKnownMethod()
     {
         $request = new Request();
         $request->setMethod('POST');
@@ -122,7 +122,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider getMethods
      */
-    public function testRequestMethodCheckWorksForAllMethods($methodName)
+    public function testRequestMethodCheckWorksForKnownMethods($methodName)
     {
         $request = new Request;
         $request->setMethod($methodName);
@@ -130,6 +130,26 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         foreach ($this->getMethods(false, $methodName) as $testMethodName => $testMethodValue) {
             $this->assertEquals($testMethodValue, $request->{'is' . $testMethodName}());
         }
+    }
+
+    /**
+     * @dataProvider validMethodProvider
+     */
+    public function testSetGetCustomMethod($method)
+    {
+        $request = new Request();
+        $request->setMethod($method);
+        $this->assertEquals($method, $request->getMethod());
+    }
+
+    /**
+     * @dataProvider invalidMethodProvider
+     * @expectedException Zend\Http\Exception\InvalidArgumentException
+     */
+    public function testExceptionOnInvalidMethod($method)
+    {
+        $request = new Request();
+        $request->setMethod($method);
     }
 
     public function testRequestCanBeCastToAString()
@@ -141,11 +161,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("GET / HTTP/1.1\r\n\r\nfoo=bar&bar=baz", $request->toString());
     }
 
-
-
-
     /**
-     * PHPUNIT DATA PROVIDER
+     * PHPUnit Data Provider for known request methods
      *
      * @param $providerContext
      * @param null $trueMethod
@@ -167,4 +184,52 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         return $return;
     }
 
+    /**
+     * Provider for valid HTTP method names
+     *
+     * The RFC defines valid HTTP request methods as 'token' which means one or
+     * more US ASCII characters except for CTLs (ASCII 0x00 - 0x19, 0x7f) and
+     * separators as defined in the RFC
+     *
+     * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html#sec2.2
+     */
+    static public function validMethodProvider()
+    {
+        return array(
+            array('GET'),
+            array('GETPROPS'),
+            array('PATCH'),
+            array('FooBar'),
+            array('FOO_BAR'),
+            array('_POST'),
+            array('FOO-BAR'),
+            array('QWE*')
+        );
+    }
+
+    /**
+     * Provider for invalid HTTP method names
+     *
+     */
+    static public function invalidMethodProvider()
+    {
+        $separators = str_split("()<>@,;:\\\"/[]?={}", 1);
+        $ret = array(
+            array(null),
+            array(new \stdClass()),
+            array(array()),
+            array(3),
+            array(''),
+            array('FOO BAR'),
+            array("foo\t"),
+            array("foo\0"),
+            array("תביא"),
+        );
+
+        foreach($separators as $c) {
+            $ret[] = array("FOO{$c}BAR");
+        }
+
+        return $ret;
+    }
 }
