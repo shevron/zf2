@@ -23,7 +23,8 @@
  * @namespace
  */
 namespace ZendTest\Validator;
-use Zend\Validator;
+use Zend\Validator,
+    ReflectionClass;
 
 /**
  * Test helper
@@ -98,7 +99,7 @@ class RegexTest extends \PHPUnit_Framework_TestCase
      */
     public function testBadPattern()
     {
-        $this->setExpectedException('Zend\Validator\Exception\InvalidArgumentException', 'Internal error while');
+        $this->setExpectedException('Zend\Validator\Exception\InvalidArgumentException', 'Internal error parsing');
         $validator = new Validator\Regex('/');
     }
 
@@ -109,5 +110,64 @@ class RegexTest extends \PHPUnit_Framework_TestCase
     {
         $validator = new Validator\Regex('/./');
         $this->assertFalse($validator->isValid(array(1 => 1)));
+    }
+
+    /**
+     * @ZF-11863
+     */
+    public function testSpecialCharValidation()
+    {
+        /**
+         * The elements of each array are, in order:
+         *      - pattern
+         *      - expected validation result
+         *      - array of test input values
+         */
+        $valuesExpected = array(
+            array('/^[[:alpha:]\']+$/iu', true, array('test', 'òèùtestòò', 'testà', 'teààst', 'ààòòìùéé', 'èùòìiieeà')),
+            array('/^[[:alpha:]\']+$/iu', false, array('test99'))
+            );
+        foreach ($valuesExpected as $element) {
+            $validator = new Validator\Regex($element[0]);
+            foreach ($element[2] as $input) {
+                $this->assertEquals($element[1], $validator->isValid($input));
+            }
+        }
+    }
+    
+    public function testEqualsMessageTemplates()
+    {
+        $validator = new Validator\Regex('//');
+        $reflection = new ReflectionClass($validator);
+        
+        if(!$reflection->hasProperty('_messageTemplates')) {
+            return;
+        }
+        
+        $property = $reflection->getProperty('_messageTemplates');
+        $property->setAccessible(true);
+
+        $this->assertEquals(
+            $property->getValue($validator),
+            $validator->getOption('messageTemplates')
+        );
+    }
+    
+    public function testEqualsMessageVariables()
+    {
+        $validator = new Validator\Regex('//');
+        $reflection = new ReflectionClass($validator);
+        
+        if(!$reflection->hasProperty('_messageVariables')) {
+            return;
+        }
+        
+        $property = $reflection->getProperty('_messageVariables');
+        $property->setAccessible(true);
+
+        $this->assertEquals(
+            $property->getValue($validator),
+            $validator->getOption('messageVariables')
+        );
     }
 }

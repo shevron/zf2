@@ -165,8 +165,8 @@ class PaginationControlTest extends \PHPUnit_Framework_TestCase
             /* We don't care whether or not the module exists--we just want to
              * make sure it gets to Zend_View_Helper_Partial and it's recognized
              * as a module. */
-            $this->assertInstanceOf('Zend\View\Helper\Partial\Exception', $e);
-            $this->assertEquals('Cannot render partial; module does not exist', $e->getMessage());
+            $this->assertInstanceOf('Zend\View\Exception\RuntimeException', $e);
+            $this->assertContains('Script "partial.phtml" not found in path', $e->getMessage());
         }
     }
 

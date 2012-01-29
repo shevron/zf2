@@ -14,6 +14,7 @@ class Response extends Message implements ResponseDescription
     const STATUS_CODE_CUSTOM = 0;
     const STATUS_CODE_100 = 100;
     const STATUS_CODE_101 = 101;
+    const STATUS_CODE_102 = 102;
     const STATUS_CODE_200 = 200;
     const STATUS_CODE_201 = 201;
     const STATUS_CODE_202 = 202;
@@ -21,6 +22,8 @@ class Response extends Message implements ResponseDescription
     const STATUS_CODE_204 = 204;
     const STATUS_CODE_205 = 205;
     const STATUS_CODE_206 = 206;
+    const STATUS_CODE_207 = 207;
+    const STATUS_CODE_208 = 208;
     const STATUS_CODE_300 = 300;
     const STATUS_CODE_301 = 301;
     const STATUS_CODE_302 = 302;
@@ -47,12 +50,26 @@ class Response extends Message implements ResponseDescription
     const STATUS_CODE_415 = 415;
     const STATUS_CODE_416 = 416;
     const STATUS_CODE_417 = 417;
+    const STATUS_CODE_418 = 418;
+    const STATUS_CODE_422 = 422;
+    const STATUS_CODE_423 = 423;
+    const STATUS_CODE_424 = 424;
+    const STATUS_CODE_425 = 425;
+    const STATUS_CODE_426 = 426;
+    const STATUS_CODE_428 = 428;
+    const STATUS_CODE_429 = 429;
+    const STATUS_CODE_431 = 431;
     const STATUS_CODE_500 = 500;
     const STATUS_CODE_501 = 501;
     const STATUS_CODE_502 = 502;
     const STATUS_CODE_503 = 503;
     const STATUS_CODE_504 = 504;
     const STATUS_CODE_505 = 505;
+    const STATUS_CODE_506 = 506;
+    const STATUS_CODE_507 = 507;
+    const STATUS_CODE_508 = 508;
+    const STATUS_CODE_511 = 511;
+    
     /**#@-*/
 
     /**#@+
@@ -74,6 +91,7 @@ class Response extends Message implements ResponseDescription
         // INFORMATIONAL CODES
         100 => 'Continue',
         101 => 'Switching Protocols',
+        102 => 'Processing',
         // SUCCESS CODES
         200 => 'OK',
         201 => 'Created',
@@ -82,6 +100,8 @@ class Response extends Message implements ResponseDescription
         204 => 'No Content',
         205 => 'Reset Content',
         206 => 'Partial Content',
+        207 => 'Multi-status',
+        208 => 'Already Reported',
         // REDIRECTION CODES
         300 => 'Multiple Choices',
         301 => 'Moved Permanently',
@@ -110,6 +130,15 @@ class Response extends Message implements ResponseDescription
         415 => 'Unsupported Media Type',
         416 => 'Requested range not satisfiable',
         417 => 'Expectation Failed',
+        418 => 'I\'m a teapot',
+        422 => 'Unprocessable Entity',
+        423 => 'Locked',
+        424 => 'Failed Dependency',
+        425 => 'Unordered Collection',
+        426 => 'Upgrade Required',
+        428 => 'Precondition Required',
+        429 => 'Too Many Requests',
+        431 => 'Request Header Fields Too Large',
         // SERVER ERROR
         500 => 'Internal Server Error',
         501 => 'Not Implemented',
@@ -117,6 +146,10 @@ class Response extends Message implements ResponseDescription
         503 => 'Service Unavailable',
         504 => 'Gateway Time-out',
         505 => 'HTTP Version not supported',
+        506 => 'Variant Also Negotiates',
+        507 => 'Insufficient Storage',
+        508 => 'Loop Detected',
+        511 => 'Network Authentication Required',
     );
 
     /**
@@ -156,11 +189,6 @@ class Response extends Message implements ResponseDescription
         }
         
         $response->version = $matches['version'];
-
-        if (!defined(get_called_class() . '::STATUS_CODE_' . $matches['status'])) {
-            throw new Exception\InvalidArgumentException('Unknown status code found in provided string');
-        }
-
         $response->setStatusCode($matches['status']);
         $response->setReasonPhrase($matches['reason']);
 
@@ -312,7 +340,7 @@ class Response extends Message implements ResponseDescription
                 $code
             ));
         }
-        $this->statusCode = $code;
+        $this->statusCode = (int) $code;
         return $this;
     }
 
@@ -432,11 +460,21 @@ class Response extends Message implements ResponseDescription
         return (200 <= $code && 300 > $code);
     }
 
+    /**
+     * Render the response line string
+     * 
+     * @return string
+     */
     public function renderResponseLine()
     {
         return 'HTTP/' . $this->getVersion() . ' ' . $this->getStatusCode() . ' ' . $this->getReasonPhrase();
     }
     
+    /**
+     * Render entire response as HTTP response string
+     * 
+     * @return string
+     */
     public function toString()
     {
         $str = $this->renderResponseLine() . "\r\n";

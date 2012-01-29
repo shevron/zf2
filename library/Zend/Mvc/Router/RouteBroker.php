@@ -21,7 +21,7 @@
 namespace Zend\Mvc\Router;
 
 use Zend\Loader\Broker,
-    Zend\Loader\PluginClassLoader,
+    Zend\Loader\PluginClassLocator,
     Zend\Loader\ShortNameLocator,
     Zend\Mvc\Router\Exception;
 
@@ -45,7 +45,7 @@ class RouteBroker implements Broker
     /**
      * Plugin class loader used by this instance.
      * 
-     * @var ShortNameLocator 
+     * @var PluginClassLocator 
      */
     protected $classLoader;
 
@@ -224,8 +224,8 @@ class RouteBroker implements Broker
      */
     public function setClassLoader(ShortNameLocator $loader)
     {
-        if (!$loader instanceof PluginClassLoader) {
-            throw new Exception\InvalidArgumentException('Expected instance of PluginClassLoader');
+        if (!$loader instanceof PluginClassLocator) {
+            throw new Exception\InvalidArgumentException('Expected instance of PluginClassLocator');
         }
         
         $this->classLoader = $loader;
