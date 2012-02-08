@@ -21,7 +21,7 @@ class Socket implements Transport
         'gzip'     => 'Zend\Http\Transport\Filter\Gzip',
         'deflate'  => 'Zend\Http\Transport\Filter\Deflate',
     );
-    
+
     /**
      * Whether to use keep-alive if server allows it
      *
@@ -143,13 +143,13 @@ class Socket implements Transport
      * @var Zend\Log\Logger
      */
     protected $logger                = null;
-    
+
     /**
-     * A content encoding filter object 
-     * 
-     * Content encoding filters are used to handle Content-Encoding of the 
-     * HTTP response body 
-     * 
+     * A content encoding filter object
+     *
+     * Content encoding filters are used to handle Content-Encoding of the
+     * HTTP response body
+     *
      * @var null|Zend\Http\Transport\Filter\Filter
      */
     protected $contentEncodingFilter = null;
@@ -284,7 +284,7 @@ class Socket implements Transport
      */
     public function send(Request $request, Response $response = null)
     {
-        $this->log("Sending {$request->getMethod()} request to {$request->getUri()}", Logger::NOTICE);
+        $this->log("Sending {$request->getMethod()} request to {$request->uri()}", Logger::NOTICE);
 
         // Prepare request
         $this->prepareRequest($request);
@@ -299,7 +299,7 @@ class Socket implements Transport
         $response = $this->readResponse($response);
 
         if (! $this->keepAlive ||
-           ($response->headers()->has('connection') && 
+           ($response->headers()->has('connection') &&
             $response->headers()->get('connection')->getFieldValue() == 'close')) {
             $this->disconnect();
         }
@@ -325,12 +325,12 @@ class Socket implements Transport
             if ($host) {
                 $scheme = $request->uri()->getScheme();
                 $port = $request->uri()->getPort();
-                if (($scheme == 'http' && $port != 80) || 
-                    ($scheme == 'https' && $port != 443)) { 
+                if (($scheme == 'http' && $port != 80) ||
+                    ($scheme == 'https' && $port != 443)) {
                     $host .= ":$port";
-                } 
+                }
             }
-            
+
             $request->headers()->addHeaderLine('Host', $host);
         }
     }
@@ -435,12 +435,12 @@ class Socket implements Transport
         $requestUri = $request->uri()->getPath();
         if (! $requestUri) $requestUri = '/';
 
-        if ($query = $request->uri()->getQuery()) { 
+        if ($query = $request->uri()->getQuery()) {
             $requestUri .= "?$query";
         }
-        
+
     	$headers = $request->getMethod() . " " .
-    	           $requestUri . " " . 
+    	           $requestUri . " " .
     	           "HTTP/" . $request->getVersion() . "\r\n" .
     			   $request->headers()->toString() . "\r\n";
 
@@ -463,7 +463,7 @@ class Socket implements Transport
      */
     protected function sendBody($body)
     {
-        if ($body instanceof Entity) { 
+        if ($body instanceof Entity) {
             while (($chunk = $body->read()) != null) {
                 if (! fwrite($this->socket, $chunk)) {
                     throw new Exception\ConnectionException("Failed writing request body chunk to $this->connectedTo");
@@ -471,7 +471,7 @@ class Socket implements Transport
             }
         } else {
             $result = fwrite($this->socket, $body);
-            if ($result === false) { 
+            if ($result === false) {
                 throw new Exception\ConnectionException("Failed writing request body chunk to $this->connectedTo");
             }
         }
@@ -489,7 +489,7 @@ class Socket implements Transport
     {
         $this->log("Reading response from server", Logger::INFO);
 
-        if (! $response instanceof Response) { 
+        if (! $response instanceof Response) {
             $response = new $this->responseClass;
         }
 
@@ -503,7 +503,7 @@ class Socket implements Transport
             throw new Exception\ProtocolException("Response status line is malformed: '$line'");
         }
         $this->log("Got HTTP response status line: $line", Logger::DEBUG);
-        
+
         $response->setVersion($matches[1])
                  ->setStatusCode($matches[2])
                  ->setReasonPhrase($matches[3]);
@@ -603,24 +603,24 @@ class Socket implements Transport
             }
             $response->setContent($body);
         }
-        
+
         // Remove content encoding filter, if set
         if ($this->contentEncodingFilter) {
             $this->contentEncodingFilter = null;
         }
     }
-    
+
     protected function handleContentEncoding(Response $response, $header)
     {
-        if (! $header) { 
+        if (! $header) {
             $this->contentEncodingFilter = new Filter\Identity();
             return;
         }
-        
+
         $contentEnc = $header->getFieldValue();
         $this->log("Applying content encoding filter for '$contentEnc'", Logger::DEBUG);
-        
-        if (isset(static::$contentEncodingFilters[$contentEnc])) { 
+
+        if (isset(static::$contentEncodingFilters[$contentEnc])) {
             $this->contentEncodingFilter = new static::$contentEncodingFilters[$contentEnc];
             $response->headers()->removeHeader($header);
         } else {
@@ -648,7 +648,7 @@ class Socket implements Transport
             $this->readLine();
 
         } while($nextChunk > 0);
-        
+
         return $body;
     }
 
@@ -697,13 +697,13 @@ class Socket implements Transport
                 break;
             }
         }
-        
+
         return $body;
     }
-    
+
     /**
      * Disconnect from remote server, if connected
-     * 
+     *
      * @return void
      */
     protected function disconnect()
@@ -711,23 +711,23 @@ class Socket implements Transport
         if ($this->socket) {
             fclose($this->socket);
         }
-        
+
         $this->connectedTo = null;
     }
 
     /**
      * Log a message if logger was set
-     * 
+     *
      * @param string  $message
      * @param integer $priority
      */
     protected function log($message, $priority)
     {
-        if ($this->logger) { 
+        if ($this->logger) {
             $this->logger->log($message, $priority);
         }
     }
-    
+
     /**
      * Read a line from the server
      *

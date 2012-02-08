@@ -57,21 +57,6 @@ class Request extends Message implements RequestDescription
     protected $postParams = null;
 
     /**
-     * @var \Zend\Stdlib\ParametersDescription
-     */
-    protected $fileParams = null;
-
-    /**
-     * @var \Zend\Stdlib\ParametersDescription
-     */
-    protected $serverParams = null;
-
-    /**
-     * @var \Zend\Stdlib\ParametersDescription
-     */
-    protected $envParams = null;
-
-    /**
      * @var string|\Zend\Http\Headers
      */
     protected $headers = null;
@@ -194,19 +179,6 @@ class Request extends Message implements RequestDescription
     }
 
     /**
-     * Return the URI for this request object
-     *
-     * @return string
-     */
-    public function getUri()
-    {
-        if ($this->uri instanceof HttpUri) {
-            return $this->uri->toString();
-        }
-        return $this->uri;
-    }
-
-    /**
      * Return the URI for this request object as an instance of Zend\Uri\Http
      *
      * @return HttpUri
@@ -308,88 +280,6 @@ class Request extends Message implements RequestDescription
     public function cookie()
     {
         return $this->headers()->get('Cookie');
-    }
-
-    /**
-     * Provide an alternate Parameter Container implementation for file parameters in this object, (this is NOT the
-     * primary API for value setting, for that see file())
-     *
-     * @param \Zend\Stdlib\ParametersDescription $files
-     * @return Request
-     */
-    public function setFile(ParametersDescription $files)
-    {
-        $this->fileParams = $files;
-        return $this;
-    }
-
-    /**
-     * Return the parameter container responsible for file parameters
-     *
-     * @return ParametersDescription
-     */
-    public function file()
-    {
-        if ($this->fileParams === null) {
-            $this->fileParams = new Parameters();
-        }
-
-        return $this->fileParams;
-    }
-
-    /**
-     * Provide an alternate Parameter Container implementation for server parameters in this object, (this is NOT the
-     * primary API for value setting, for that see server())
-     *
-     * @param \Zend\Stdlib\ParametersDescription $server
-     * @return Request
-     */
-    public function setServer(ParametersDescription $server)
-    {
-        $this->serverParams = $server;
-        return $this;
-    }
-
-    /**
-     * Return the parameter container responsible for server parameters
-     *
-     * @see http://www.faqs.org/rfcs/rfc3875.html
-     * @return \Zend\Stdlib\ParametersDescription
-     */
-    public function server()
-    {
-        if ($this->serverParams === null) {
-            $this->serverParams = new Parameters();
-        }
-
-        return $this->serverParams;
-    }
-
-    /**
-     * Provide an alternate Parameter Container implementation for env parameters in this object, (this is NOT the
-     * primary API for value setting, for that see env())
-     *
-     * @param \Zend\Stdlib\ParametersDescription $env
-     * @return \Zend\Http\Request
-     */
-    public function setEnv(ParametersDescription $env)
-    {
-        $this->envParams = $env;
-        return $this;
-    }
-
-    /**
-     * Return the parameter container responsible for env parameters
-     *
-     * @return \Zend\Stdlib\ParametersDescription
-     */
-    public function env()
-    {
-        if ($this->envParams === null) {
-            $this->envParams = new Parameters();
-        }
-
-        return $this->envParams;
     }
 
     /**
