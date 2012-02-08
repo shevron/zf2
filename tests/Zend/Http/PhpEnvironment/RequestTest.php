@@ -224,4 +224,30 @@ class RequestTest extends TestCase
         $this->assertEquals($value, $header->getFieldValue($value));
     }
 
+    public function testRequestUsesParametersContainerByDefault()
+    {
+        $request = new Request();
+        $this->assertInstanceOf('Zend\Stdlib\Parameters', $request->query());
+        $this->assertInstanceOf('Zend\Stdlib\Parameters', $request->post());
+        $this->assertInstanceOf('Zend\Stdlib\Parameters', $request->file());
+        $this->assertInstanceOf('Zend\Stdlib\Parameters', $request->server());
+        $this->assertInstanceOf('Zend\Stdlib\Parameters', $request->env());
+    }
+
+    public function testRequestAllowsSettingOfParameterContainer()
+    {
+        $request = new Request();
+        $p = new \Zend\Stdlib\Parameters();
+        $request->setQuery($p);
+        $request->setPost($p);
+        $request->setFile($p);
+        $request->setServer($p);
+        $request->setEnv($p);
+
+        $this->assertSame($p, $request->query());
+        $this->assertSame($p, $request->post());
+        $this->assertSame($p, $request->file());
+        $this->assertSame($p, $request->server());
+        $this->assertSame($p, $request->env());
+    }
 }
