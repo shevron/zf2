@@ -16,7 +16,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $request = Request::fromString($string);
 
         $this->assertEquals(Request::METHOD_GET, $request->getMethod());
-        $this->assertEquals('/foo', $request->getUri());
+        $this->assertEquals('/foo', $request->uri()->toString());
         $this->assertEquals(Request::VERSION_11, $request->getVersion());
         $this->assertEquals('Some Content', $request->getContent());
     }
@@ -26,9 +26,6 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $request = new Request();
         $this->assertInstanceOf('Zend\Stdlib\Parameters', $request->query());
         $this->assertInstanceOf('Zend\Stdlib\Parameters', $request->post());
-        $this->assertInstanceOf('Zend\Stdlib\Parameters', $request->file());
-        $this->assertInstanceOf('Zend\Stdlib\Parameters', $request->server());
-        $this->assertInstanceOf('Zend\Stdlib\Parameters', $request->env());
     }
 
     public function testRequestAllowsSettingOfParameterContainer()
@@ -37,15 +34,9 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $p = new \Zend\Stdlib\Parameters();
         $request->setQuery($p);
         $request->setPost($p);
-        $request->setFile($p);
-        $request->setServer($p);
-        $request->setEnv($p);
 
         $this->assertSame($p, $request->query());
         $this->assertSame($p, $request->post());
-        $this->assertSame($p, $request->file());
-        $this->assertSame($p, $request->server());
-        $this->assertSame($p, $request->env());
     }
 
     public function testRequestPersistsRawBody()
@@ -89,10 +80,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         $request = new Request();
         $request->setUri('/foo');
-        $this->assertEquals('/foo', $request->getUri());
         $this->assertInstanceOf('Zend\Uri\Uri', $request->uri());
         $this->assertEquals('/foo', $request->uri()->toString());
-        $this->assertEquals('/foo', $request->getUri());
     }
 
     public function testRequestSetUriWillThrowExceptionOnInvalidArgument()
