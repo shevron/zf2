@@ -430,10 +430,6 @@ class Client implements Dispatchable
                 $response->headers()->has('Location') &&
                 $this->redirectCounter < $this->options->getMaxRedirects()) {
 
-                // We do not modify the original request
-                $oldUri = $request->uri();
-                $request = clone $request;
-
                 // Avoid problems with buggy servers that add whitespace at the
                 // end of some headers
                 $location = trim($response->headers()->get('Location')->getFieldValue());
@@ -448,7 +444,7 @@ class Client implements Dispatchable
                     $request->setContent(null);
                 }
 
-                $uri = HttpUri::merge($oldUri, $location)->normalize();
+                $uri = HttpUri::merge($request->uri(), $location)->normalize();
                 $request->setUri($uri);
 
                 ++$this->redirectCounter;
