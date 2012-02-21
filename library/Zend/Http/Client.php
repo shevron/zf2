@@ -176,6 +176,7 @@ class Client implements Dispatchable
     {
         if (! $this->transport) {
             $this->transport = new static::$defaultTransport();
+            $this->transport->setOptions($this->options->getTransportOptions());
         }
 
         return $this->transport;
