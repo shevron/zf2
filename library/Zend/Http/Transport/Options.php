@@ -2,7 +2,7 @@
 
 namespace Zend\Http\Transport;
 
-class Options extends \Zend\Stdlib\Options
+class Options extends \Zend\Stdlib\Options implements \IteratorAggregate
 {
     /**
      * Whether to use keep-alive if server allows it
@@ -172,7 +172,9 @@ class Options extends \Zend\Stdlib\Options
      */
     public function setDefaultResponseClass($defaultResponseClass)
     {
-        if (! is_subclass_of('\Zend\Http\Response', $defaultResponseClass)) {
+        if (! ($defaultResponseClass == '\Zend\Http\Response' ||
+               is_subclass_of('\Zend\Http\Response', $defaultResponseClass))) {
+
             throw new Exception\InvalidArgumentException('Invalid argument passed as default response class: not a subclass of Zend\Http\Response');
         }
 
@@ -185,10 +187,6 @@ class Options extends \Zend\Stdlib\Options
      */
     public function setDefaultResponseBodyClass($defaultResponseBodyClass)
     {
-        if (! is_subclass_of('\Zend\Http\Entity\Entity', $defaultResponseBodyClass)) {
-            throw new Exception\InvalidArgumentException('Invalid argument passed as default response body class: not a subclass of Zend\Http\Entity\Entity');
-        }
-
         $this->defaultResponseBodyClass = $defaultResponseBodyClass;
         return $this;
     }
@@ -229,6 +227,13 @@ class Options extends \Zend\Stdlib\Options
         return $this;
     }
 
-
-
+    /**
+     * Get iterator object - defined by the IteratorAggregate interface
+     *
+     * @return \ArrayIterator
+     */
+    public function getIterator()
+    {
+        return new \ArrayIterator(get_object_vars($this));
+    }
 }
