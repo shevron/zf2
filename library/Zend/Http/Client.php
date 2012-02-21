@@ -467,6 +467,19 @@ class Client implements Dispatchable
                 $request->headers()->addHeader($header);
             }
         }
+
+        $existingCookies = $request->cookie();
+        $cookieHeader = $this->prepareCookies(
+            $existingCookies,
+            $request->uri()->getHost(),
+            $request->uri()->getPath(),
+            $request->uri()->getScheme() == 'https'
+        );
+
+        if ($existingCookies) {
+            $request->headers()->removeHeader($existingCookies);
+        }
+        $request->headers()->addHeader($cookieHeader);
     }
 
     protected function handleResponse(Response $response)
@@ -481,12 +494,13 @@ class Client implements Dispatchable
     /**
      * Prepare Cookies
      *
-     * @param   string $uri
-     * @param   string $domain
-     * @param   boolean $secure
+     * @param   Zend\Http\Header\Cookie $existingCookies
+     * @param   string                  $domain
+     * @param   string                  $path
+     * @param   boolean                 $secure
      * @return  Cookie|boolean
      */
-    protected function prepareCookies($domain, $path, $secure)
+    protected function prepareCookies($existingCookies, $domain, $path, $secure)
     {
         $validCookies = array();
 
@@ -505,6 +519,12 @@ class Client implements Dispatchable
 
         $cookies = Cookie::fromSetCookieArray($validCookies);
         $cookies->setEncodeValue($this->config['encodecookies']);
+
+        if ($existingCookies instanceof Cookie) {
+            foreach($existingCookies as $cookie) {
+                $cookies->append($cookie);
+            }
+        }
 
         return $cookies;
     }
