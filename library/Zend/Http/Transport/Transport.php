@@ -19,4 +19,12 @@ interface Transport
      * @return Zend\Http\Response
      */
     public function send(Request $request, Response $response = null);
+
+    /**
+     * Set configuration of transport adapter
+     *
+     * @param array $config
+     * @return Zend\Http\Transport\Transport
+     */
+    public function setConfig(array $config = array());
 }
