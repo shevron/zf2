@@ -134,7 +134,18 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $this->client->setOptions($options);
         $this->assertSame($transportOptions, $this->transport->getOptions());
+        $this->assertFalse($this->transport->getOptions()->getSslVerifyPeer());
     }
 
+    public function testSetOptionPassesTransportOptionsAsArray()
+    {
+        $options = new ClientOptions(array(
+            'transportOptions' => new TransportOptions(array('sslVerifyPeer' => false))
+        ));
+
+        $this->client->setOptions($options);
+
+        $this->assertFalse($this->transport->getOptions()->getSslVerifyPeer());
+    }
 
 }
