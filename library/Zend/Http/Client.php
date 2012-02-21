@@ -27,7 +27,7 @@ use Zend\Config\Config,
     Zend\Uri\Http as HttpUri,
     Zend\Http\Header\Cookie,
     Zend\Http\Header\SetCookie,
-    Zend\Http\Transport\Transport,
+    Zend\Http\Transport\Transport as HttpTransport,
     Zend\Stdlib\Parameters,
     Zend\Stdlib\ParametersDescription,
     Zend\Stdlib\Dispatchable,
@@ -153,7 +153,7 @@ class Client implements Dispatchable
         }
 
         // Pass configuration options to the adapter if it exists
-        if ($this->transport instanceof Transport && isset($this->config['transportconfig'])) {
+        if ($this->transport instanceof HttpTransport && isset($this->config['transportconfig'])) {
             $this->transport->setConfig($this->config['transportconfig']);
         }
 
@@ -167,7 +167,7 @@ class Client implements Dispatchable
      * @return \Zend\Http\Client
      * @throws \Zend\Http\Client\Exception
      */
-    public function setTransport(Transport\Transport $transport)
+    public function setTransport(HttpTransport $transport)
     {
         $this->transport = $transport;
         if (isset($this->config['transportconfig'])) {
