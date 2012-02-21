@@ -23,39 +23,25 @@ class Socket implements Transport
     );
 
     /**
-     * Whether to use keep-alive if server allows it
+     * Options object
      *
-     * HTTP Keep-alive allows sending multiple HTTP request on a single TCP
-     * connection, thus improving efficiency of consecutive requests to the
-     * same server.
-     *
-     * @var boolean
+     * @var Zend\Http\Transport\SocketOptions
      */
-    protected $keepAlive             = true;
+    protected $options = null;
 
     /**
-     * Timeout in seconds for connecting to and reading from the server
+     * Socket client resource
      *
-     * @var integer
+     * @var resource
      */
-    protected $timeout               = 30;
+    protected $socket = null;
 
     /**
-     * Class to use for response objects
+     * Indicates if we are connected and to what server
      *
      * @var string
      */
-    protected $responseClass         = '\Zend\Http\Response';
-
-    /**
-     * Class to use for response body objects
-     *
-     * This is only used if the response object does not contain a
-     * pre-instantiated body object
-     *
-     * @var string
-     */
-    protected $responseBodyClass     = '\Zend\Http\Entity\SmartBuffer';
+    protected $connectedTo = null;
 
     /**
      * PHP Stream context
@@ -66,83 +52,7 @@ class Socket implements Transport
      *
      * @var resource
      */
-    protected $context               = null;
-
-    /**
-     * SSL cryptography type
-     *
-     * Should be one of the STREAM_CRYPTO_METHOD_*_CLIENT constants defined by
-     * PHP. This can be used to enforce TLS or SSLv3, for example.
-     *
-     * @var integer
-     */
-    protected $sslCryptoType         = STREAM_CRYPTO_METHOD_SSLv23_CLIENT;
-
-    /**
-     * SSL client cerfiticate file
-     *
-     * If your server requires a client certificate, this should point to a PEM
-     * encoded certificate file
-     *
-     * @var string
-     */
-    protected $sslCertificate        = null;
-
-    /**
-     * Passphrase for the SSL client certificate
-     *
-     * This is only used if $_sslCertificate is set, and if it is passphrase
-     * protected.
-     *
-     * @var string
-     */
-    protected $sslPassphrase         = null;
-
-    /**
-     * Whether or not to verify SSL peer
-     *
-     * For security reasons, SSL server certificate should be verified against
-     * a CA on each connection, to ensure no MITM attacks are preformed. If
-     * you are connecting to a server without a valid certificate or with a
-     * self-signed certificate, and are sure you know what you are doing, you
-     * can set this to 'false'.
-     *
-     * @var boolean
-     */
-    protected $sslVerifyPeer         = true;
-
-    /**
-     * Path to the SSL certificate authority file
-     *
-     * Setting this allows you to control the SSL layer's known certificate
-     * authorities, used to validate peers. Usually there is no need to modify
-     * this, unless your OpelSSL environment is not properly configured or you
-     * are using certificates signed by a custom certificate authority.
-     *
-     * @var string
-     */
-    protected $sslCaFile             = null;
-
-    /**
-     * Socket client resource
-     *
-     * @var resource
-     */
-    protected $socket                = null;
-
-    /**
-     * Indicates if we are connected and to what server
-     *
-     * @var string
-     */
-    protected $connectedTo           = null;
-
-    /**
-     * Logger object
-     *
-     * @var Zend\Log\Logger
-     */
-    protected $logger                = null;
+    protected $context = null;
 
     /**
      * A content encoding filter object
@@ -159,73 +69,24 @@ class Socket implements Transport
      *
      * @param array $config
      */
-    public function __construct(array $config = array())
+    public function __construct(SocketOptions $options = null)
     {
-        $this->setConfig($config);
+        if ($options) {
+            $this->setOptions($options);
+        } else {
+            $this->options = new SocketOptions();
+        }
     }
 
     /**
-     * Set configuration for the socket transport object
+     * Set options for the socket transport object
      *
-     * @param  array $config
-     * @return \Zend\Http\Transport\Socket
+     * @param  Zend\Http\Transport\SocketOptions $options
+     * @return Zend\Http\Transport\Socket
      */
-    public function setConfig(array $config = array())
+    public function setOptions(SocketOptions $options)
     {
-        if (isset($config['keepalive'])) {
-            $this->keepAlive = (boolean) $config['keepalive'];
-        }
-
-        if (isset($config['timeout'])) {
-            $this->timeout = (int) $config['timeout'];
-        }
-
-        if (isset($config['responseClass'])) {
-            $this->responseClass = $config['responseClass'];
-        }
-
-        if (isset($config['responseBodyClass'])) {
-            $this->responseBodyClass = $config['responseBodyClass'];
-        }
-
-        if (isset($config['logger'])) {
-            $this->logger = $config['logger'];
-            if (! $this->logger instanceof Logger) {
-                throw new Exception\InvalidArgumentException("'logger' config option is expected to be a Zend\\Log\\Logger instance");
-            }
-        }
-
-        if (isset($config['streamContext'])) {
-            $this->setStreamContext($config['streamContext']);
-        }
-
-        if (isset($config['ssl']) && is_array($config['ssl'])) {
-            $sslOpts = $config['ssl'];
-            if (isset($sslOpts['CryptoType'])) {
-                if (is_string($sslOpts['CryptoType'])) {
-                    $this->sslCryptoType = constant($sslOpts['CryptoType']);
-                } else {
-                    $this->sslCryptoType = $sslOpts['CryptoType'];
-                }
-            }
-
-            if (isset($sslOpts['certificateFile'])) {
-                $this->sslCertificate = $sslOpts['certificateFile'];
-            }
-
-            if (isset($sslOpts['passphrase'])) {
-                $this->sslPassphrase = $sslOpts['passphrase'];
-            }
-
-            if (isset($sslOpts['verifyPeer'])) {
-                $this->sslVerifyPeer = $sslOpts['verifyPeer'];
-            }
-
-            if (isset($sslOpts['caFile'])) {
-                $this->sslCaFile = $sslOpts['caFile'];
-            }
-        }
-
+        $this->options = $options;
         return $this;
     }
 
@@ -298,7 +159,7 @@ class Socket implements Transport
         // Read response
         $response = $this->readResponse($response);
 
-        if (! $this->keepAlive ||
+        if (! $this->options->getKeepAlive() ||
            ($response->headers()->has('connection') &&
             $response->headers()->get('connection')->getFieldValue() == 'close')) {
             $this->disconnect();
@@ -314,7 +175,7 @@ class Socket implements Transport
      */
     protected function prepareRequest(Request $request)
     {
-        if ($this->keepAlive) {
+        if ($this->options->getKeepAlive()) {
             $request->headers()->addHeaderLine('Connection', 'keep-alive');
         } else {
             $request->headers()->addHeaderLine('Connection', 'close');
@@ -367,24 +228,24 @@ class Socket implements Transport
             $context = $this->getStreamContext();
             if ($isSecure) {
                 // Handle SSL options
-                if ($this->sslPassphrase) {
-                    if (! stream_context_set_option($context, 'ssl', 'passphrase', $this->sslPassphrase)) {
+                if ($this->options->getSslPassphrase()) {
+                    if (! stream_context_set_option($context, 'ssl', 'passphrase', $this->options->getSslPassphrase())) {
                         throw new Exception\ConfigurationException('Unable to set SSL passphrase option');
                     }
                 }
 
-                if ($this->sslCertificate) {
-                    if (! stream_context_set_option($context, 'ssl', 'local_cert', $this->sslCertificate)) {
+                if ($this->options->getSslCertificate()) {
+                    if (! stream_context_set_option($context, 'ssl', 'local_cert', $this->options->getSslCertificate())) {
                         throw new Exception\ConfigurationException('Unable to set SSL local_cert option');
                     }
                 }
 
-                if (! stream_context_set_option($context, 'ssl', 'verify_peer', $this->sslVerifyPeer)) {
+                if (! stream_context_set_option($context, 'ssl', 'verify_peer', $this->options->getSslVerifyPeer())) {
                     throw new Exception\ConfigurationException('Unable to set SSL verify_peer option');
                 }
 
-                if ($this->sslCaFile) {
-                    if (! stream_context_set_option($context, 'ssl', 'cafile', $this->sslCaFile)) {
+                if ($this->options->getSslCaFile()) {
+                    if (! stream_context_set_option($context, 'ssl', 'cafile', $this->options->getSslCaFile())) {
                         throw new Exception\ConfigurationException('Unable to set SSL cafile option');
                     }
                 }
@@ -392,7 +253,7 @@ class Socket implements Transport
 
             $this->socket = @stream_socket_client(
                 $remoteServer, $errno, $errstr,
-                $this->timeout, STREAM_CLIENT_CONNECT, $context
+                $this->options->getTimeout(), STREAM_CLIENT_CONNECT, $context
             );
 
             if (! $this->socket) {
@@ -404,7 +265,7 @@ class Socket implements Transport
             $this->connectedTo = $remoteServer;
 
             if ($isSecure) {
-                if (! @stream_socket_enable_crypto($this->socket, true, $this->sslCryptoType)) {
+                if (! @stream_socket_enable_crypto($this->socket, true, $this->options->getSslCryptoType())) {
                     $errorString = '';
                     while(($sslError = openssl_error_string()) != false) {
                         $errorString .= "; SSL error: $sslError";
@@ -490,13 +351,13 @@ class Socket implements Transport
         $this->log("Reading response from server", Logger::INFO);
 
         if (! $response instanceof Response) {
-            $response = new $this->responseClass;
+            $response = new $this->options->getDefaultResponseClass();
         }
 
         // Read status line
         $line = $this->readLine();
         if (! $line) {
-            throw new Exception\ConnectionException("Failed reading response status line from $this->connectedTo");
+            throw new Exception\ProtocolException("Failed reading response status line from $this->connectedTo");
         }
         $line = trim($line);
         if (! preg_match('|^HTTP/([\d\.]+) (\d+) (.+)$|m', $line, $matches)) {
@@ -561,7 +422,7 @@ class Socket implements Transport
         /*
         $body = $response->getBody();
         if (! $body) {
-            $body = new $this->responseBodyClass;
+            $body = new $this->options->getDefaultResponseBodyClass();
             $response->setBody($body);
         }
 
