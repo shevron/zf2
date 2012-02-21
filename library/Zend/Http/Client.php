@@ -23,8 +23,7 @@
  */
 namespace Zend\Http;
 
-use Zend\Config\Config,
-    Zend\Uri\Http as HttpUri,
+use Zend\Uri\Http as HttpUri,
     Zend\Http\Header\Cookie,
     Zend\Http\Header\SetCookie,
     Zend\Http\Transport\Transport as HttpTransport,
@@ -100,61 +99,37 @@ class Client implements Dispatchable
     protected $redirectCounter = 0;
 
     /**
-     * Configuration array, set using the constructor or using ::setConfig()
+     * Options object
      *
-     * @var array
+     * @var Zend\Http\ClientOptions
      */
-    protected $config = array(
-        'maxredirects'    => 5,
-        'strictredirects' => false,
-        'useragent'       => 'Zend\Http\Client',
-        'timeout'         => 10,
-        'adapter'         => 'Zend\Http\Client\Adapter\Socket',
-        'httpversion'     => Request::VERSION_11,
-        'storeresponse'   => true,
-        'keepalive'       => false,
-        'outputstream'    => false,
-        'encodecookies'   => true,
-        'rfc3986strict'   => false
-    );
+    protected $options = null;
 
     /**
      * Constructor
      *
      * @param string $uri
-     * @param array  $config
+     * @param Zend\Http\ClientOptions $options
      */
-    public function __construct($config = null)
+    public function __construct(ClientOptions $options = null)
     {
-        if ($config !== null) {
-            $this->setConfig($config);
-        }
+        if ($options) $this->setOptions($options);
     }
 
     /**
-     * Set configuration parameters for this HTTP client
+     * Set configuration options for this HTTP client
      *
-     * @param  Config|array $config
-     * @return Client
+     * @param  Zend\Http\ClientOptions $options
+     * @return Zend\Http\Client
      * @throws Client\Exception
      */
-    public function setConfig($config = array())
+    public function setOptions(ClientOptions $options)
     {
-        if ($config instanceof Config) {
-            $config = $config->toArray();
-
-        } elseif (!is_array($config)) {
-            throw new Exception\InvalidArgumentException('Config parameter is not valid');
-        }
-
-        /** Config Key Normalization */
-        foreach ($config as $k => $v) {
-            $this->config[str_replace(array('-', '_', ' ', '.'), '', strtolower($k))] = $v; // replace w/ normalized
-        }
+        $this->options = $options;
 
         // Pass configuration options to the adapter if it exists
-        if ($this->transport instanceof HttpTransport && isset($this->config['transportconfig'])) {
-            $this->transport->setConfig($this->config['transportconfig']);
+        if ($this->transport instanceof HttpTransport && $options->hasTransportOptions()) {
+            $this->transport->setOptions($options->getTransportOptions());
         }
 
         return $this;
@@ -170,9 +145,11 @@ class Client implements Dispatchable
     public function setTransport(HttpTransport $transport)
     {
         $this->transport = $transport;
-        if (isset($this->config['transportconfig'])) {
-            $this->transport->setConfig($this->config['transportconfig']);
+
+        if ($this->options->hasTransportOptions()) {
+            $this->transport->setOptions($this->options->getTransportOptions());
         }
+
         return $this;
     }
 
@@ -249,6 +226,10 @@ class Client implements Dispatchable
         } elseif ($cookie instanceof SetCookie) {
             $this->cookies[$this->getCookieId($cookie)] = $cookie;
         } elseif (is_string($cookie) && $value !== null) {
+            if (!empty($value) && $this->options->getEncodeCookies()) {
+                $value = urlencode($value);
+            }
+
             $setCookie = new SetCookie($cookie, $value, $domain, $expire, $path, $secure, $httponly);
             $this->cookies[$this->getCookieId($setCookie)] = $setCookie;
         } else {
@@ -433,7 +414,7 @@ class Client implements Dispatchable
             // If we got redirected, look for the Location header
             if ($response->isRedirect() &&
                 $response->headers()->has('Location') &&
-                $this->redirectCounter < $this->config['maxredirects']) {
+                $this->redirectCounter < $this->options->getMaxRedirects()) {
 
                 // We do not modify the original request
                 $oldUri = $request->uri();
@@ -446,7 +427,7 @@ class Client implements Dispatchable
                 // Check whether we send the exact same request again, or drop the parameters
                 // and send a GET request
                 if ($response->getStatusCode() == 303 ||
-                   ((! $this->config['strictredirects']) && ($response->getStatusCode() == 302 ||
+                   ((! $this->options->getStrictRedirects()) && ($response->getStatusCode() == 302 ||
                        $response->getStatusCode() == 301))) {
 
                     $request->setMethod(Request::METHOD_GET);

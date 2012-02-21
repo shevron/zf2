@@ -23,8 +23,8 @@ interface Transport
     /**
      * Set configuration of transport adapter
      *
-     * @param array $config
+     * @param  Zend\Http\Transport\TransportOptions $options
      * @return Zend\Http\Transport\Transport
      */
-    public function setConfig(array $config = array());
+    public function setOptions(Options $options);
 }
