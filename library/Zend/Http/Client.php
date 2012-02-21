@@ -113,7 +113,11 @@ class Client implements Dispatchable
      */
     public function __construct(ClientOptions $options = null)
     {
-        if ($options) $this->setOptions($options);
+        if ($options) {
+            $this->setOptions($options);
+        } else {
+            $this->options = new ClientOptions();
+        }
     }
 
     /**
@@ -133,6 +137,16 @@ class Client implements Dispatchable
         }
 
         return $this;
+    }
+
+    /**
+     * Get options object
+     *
+     * @return \Zend\Http\ClientOptions
+     */
+    public function getOptions()
+    {
+        return $this->options;
     }
 
     /**
