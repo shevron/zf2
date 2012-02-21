@@ -71,4 +71,22 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(200, $resp->getStatusCode());
         $this->assertEquals(2, $this->client->getRedirectionsCount());
     }
+
+    public function testRedirectionLimit()
+    {
+        $this->client->setConfig(array('maxredirects' => 2));
+
+        $respQueue = $this->transport->getResponseQueue();
+        $respQueue->enqueue(Response::fromString("HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\n\r\n"));
+        $respQueue->enqueue(Response::fromString("HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect2\r\n\r\n"));
+        $respQueue->enqueue(Response::fromString("HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect3\r\n\r\n"));
+        $respQueue->enqueue(Response::fromString("HTTP/1.1 200 Ok\r\nContent-length: 0\r\n\r\n"));
+
+        $request = new Request();
+        $request->setUri("http://www.example.com/");
+        $resp = $this->client->send($request);
+
+        $this->assertEquals(301, $resp->getStatusCode());
+        $this->assertEquals("/redirect3", $this->client->headers()->get('Location')->getFieldValue());
+    }
 }
