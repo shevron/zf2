@@ -22,6 +22,13 @@ class Test implements Transport
     protected $defaultResponse;
 
     /**
+     * Options object
+     *
+     * @var Zend\Http\Transport\Options
+     */
+    protected $options = null;
+
+    /**
      * Send request
      *
      * This will return the pre-defined response object
@@ -44,12 +51,24 @@ class Test implements Transport
     /**
      * Set configuration of transport adapter
      *
-     * @param  Zend\Http\Transport\TransportOptions $options
+     * @param  Zend\Http\Transport\Options   $options
      * @return Zend\Http\Transport\Transport
      */
     public function setOptions(Options $options)
     {
+        $this->options = $options;
+        return $this;
+    }
 
+    /**
+     * Get options for the socket transport object
+     *
+     * @return Zend\Http\Transport\Options
+     * @see Zend\Http\Transport.Transport::getOptions()
+     */
+    public function getOptions()
+    {
+        return $this->options;
     }
 
     /**

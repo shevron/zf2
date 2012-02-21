@@ -69,7 +69,7 @@ class Socket implements Transport
      *
      * @param array $config
      */
-    public function __construct(SocketOptions $options = null)
+    public function __construct(Options $options = null)
     {
         if ($options) {
             $this->setOptions($options);
@@ -84,10 +84,25 @@ class Socket implements Transport
      * @param  Zend\Http\Transport\SocketOptions $options
      * @return Zend\Http\Transport\Socket
      */
-    public function setOptions(SocketOptions $options)
+    public function setOptions(Options $options)
     {
+        if (! $options instanceof SocketOptions) {
+            $options = new SocketOptions($options);
+        }
+
         $this->options = $options;
         return $this;
+    }
+
+    /**
+     * Get options for the socket transport object
+     *
+     * @return Zend\Http\Transport\SocketOptions
+     * @see Zend\Http\Transport.Transport::getOptions()
+     */
+    public function getOptions()
+    {
+        return $this->options;
     }
 
 	/**
@@ -351,7 +366,8 @@ class Socket implements Transport
         $this->log("Reading response from server", Logger::INFO);
 
         if (! $response instanceof Response) {
-            $response = new $this->options->getDefaultResponseClass();
+            $responseClass = $this->options->getDefaultResponseClass();
+            $response = new $responseClass;
         }
 
         // Read status line
@@ -422,7 +438,8 @@ class Socket implements Transport
         /*
         $body = $response->getBody();
         if (! $body) {
-            $body = new $this->options->getDefaultResponseBodyClass();
+            $bodyClass = $this->options->getDefaultResponseBodyClass();
+            $body = new $bodyClass;
             $response->setBody($body);
         }
 
@@ -584,9 +601,7 @@ class Socket implements Transport
      */
     protected function log($message, $priority)
     {
-        if ($this->logger) {
-            $this->logger->log($message, $priority);
-        }
+
     }
 
     /**

@@ -14,8 +14,8 @@ interface Transport
      * provided, the transport will create a default response object and return
      * it
      *
-     * @param  Zend\Http\Request        $request
-     * @param  Zend\Http\Reponse|string $response
+     * @param  Zend\Http\Request  $request
+     * @param  Zend\Http\Reponse  $response
      * @return Zend\Http\Response
      */
     public function send(Request $request, Response $response = null);
@@ -23,8 +23,15 @@ interface Transport
     /**
      * Set configuration of transport adapter
      *
-     * @param  Zend\Http\Transport\TransportOptions $options
+     * @param  Zend\Http\Transport\Options $options
      * @return Zend\Http\Transport\Transport
      */
     public function setOptions(Options $options);
+
+    /**
+     * Get configuration of transport adapter
+     *
+     * @return Zend\Http\Transport\Options
+     */
+    public function getOptions();
 }

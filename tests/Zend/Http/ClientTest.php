@@ -6,6 +6,8 @@
 namespace ZendTest\Http;
 
 use Zend\Http\Client,
+    Zend\Http\ClientOptions,
+    Zend\Http\Transport\Options as TransportOptions,
     Zend\Http\Transport\Test as TestTransport,
     Zend\Http\Transport\Socket as SocketTransport,
     Zend\Http\Request,
@@ -75,7 +77,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
     public function testRedirectionLimit()
     {
-        $this->client->setConfig(array('maxredirects' => 2));
+        $this->client->setOptions(new ClientOptions(array('maxredirects' => 2)));
 
         $respQueue = $this->transport->getResponseQueue();
         $respQueue->enqueue(Response::fromString("HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\n\r\n"));
@@ -116,4 +118,23 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($uaString, $request->headers()->get('User-agent')->getFieldValue());
     }
+
+    public function testSetGetOptions()
+    {
+        $options = new ClientOptions();
+        $this->client->setOptions($options);
+        $this->assertSame($options, $this->client->getOptions());
+    }
+
+    public function testSetOptionPassesTransportOptions()
+    {
+        $options = new ClientOptions();
+        $transportOptions = new TransportOptions(array('sslVerifyPeer' => false));
+        $options->setTransportOptions($transportOptions);
+
+        $this->client->setOptions($options);
+        $this->assertSame($transportOptions, $this->transport->getOptions());
+    }
+
+
 }
