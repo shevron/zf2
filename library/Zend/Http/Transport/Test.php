@@ -30,9 +30,8 @@ class Test implements Transport
      */
     public function send(Request $request, Response $response = null)
     {
-        $queuedResponse = $this->getResponseQueue()->dequeue();
-        if ($queuedResponse) {
-            return $queuedResponse;
+        if (count($this->getResponseQueue())) {
+            return $this->getResponseQueue()->dequeue();
         } elseif ($this->defaultResponse) {
             return $this->defaultResponse;
         } elseif ($response) {
