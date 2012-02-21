@@ -42,12 +42,12 @@ class Test implements Transport
     }
 
     /**
-     * Send transport adapter configuration
+     * Set configuration of transport adapter
      *
-     * @param array $config
-     * @return \Zend\Http\Transport\Transport
+     * @param  Zend\Http\Transport\TransportOptions $options
+     * @return Zend\Http\Transport\Transport
      */
-    public function setConfig(array $config = array())
+    public function setOptions(Options $options)
     {
 
     }
