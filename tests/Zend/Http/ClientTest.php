@@ -148,4 +148,26 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($this->transport->getOptions()->getSslVerifyPeer());
     }
 
+    public function testSetOptionsPassesTransportOptionsImplicitlyAtSend()
+    {
+        $client = new MockClient();
+        $options = new ClientOptions(array(
+            'transportOptions' => new TransportOptions(array('sslVerifyPeer' => false))
+        ));
+
+        $client->setOptions($options);
+        $client->getTransport()->getResponseQueue()->enqueue(
+            Response::fromString("HTTP/1.1 200 Ok\r\nContent-length: 0\r\n\r\n")
+        );
+
+        $response = $client->send(Request::fromString("GET / HTTP/1.1\r\nUser-agent: foobarclient\r\n\r\n"));
+
+        $this->assertFalse($client->getTransport()->getOptions()->getSslVerifyPeer());
+    }
+
+}
+
+class MockClient extends Client
+{
+    static protected $defaultTransport = 'Zend\Http\Transport\Test';
 }

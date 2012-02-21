@@ -64,10 +64,14 @@ class Test implements Transport
      * Get options for the socket transport object
      *
      * @return Zend\Http\Transport\Options
-     * @see Zend\Http\Transport.Transport::getOptions()
+     * @see    Zend\Http\Transport\Transport::getOptions()
      */
     public function getOptions()
     {
+        if (! $this->options) {
+            $this->options = new Options();
+        }
+
         return $this->options;
     }
 
