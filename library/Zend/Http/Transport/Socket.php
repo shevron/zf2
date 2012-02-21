@@ -218,11 +218,11 @@ class Socket implements Transport
      */
     protected function prepareRequest(Request $request)
     {
-        if (! $request->headers()->has('Connection')) {
-            $request->headers()->addHeaderLine(
-                'Connection',
-                $this->options->getKeepAlive() ? 'keep-alive' : 'close'
-            );
+        $keepAlive = ($this->options->getKeepAlive() ? 'keep-alive' : 'close');
+        if ($request->headers()->has('Connection')) {
+            $request->headers()->get('Connection')->setFieldValue($keepAlive);
+        } else {
+            $request->headers()->addHeaderLine('Connection', $keepAlive);
         }
 
         if (! $request->headers()->has('host')) {
