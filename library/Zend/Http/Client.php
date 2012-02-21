@@ -469,11 +469,9 @@ class Client implements Dispatchable
 
     protected function prepareRequest(Request $request)
     {
-        foreach($this->headers() as $key => $header) {
-            if ($request->headers()->has($key)) {
-                $reqHeader = $request->headers()->get($key);
-                var_dump($reqHeader, $header); exit;
-            } else {
+        foreach($this->headers() as $header) {
+            $key = $header->getFieldName();
+            if (! $request->headers()->has($key)) {
                 $request->headers()->addHeader($header);
             }
         }

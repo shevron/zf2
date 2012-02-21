@@ -30,6 +30,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->transport = new TestTransport();
+        $this->transport->setDefaultResponse(Response::fromString("HTTP/1.1 200 Ok\r\nContent-length: 0\r\n\r\n"));
+
         $this->client = new Client();
         $this->client->setTransport($this->transport);
     }
@@ -62,7 +64,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $respQueue = $this->transport->getResponseQueue();
         $respQueue->enqueue(Response::fromString("HTTP/1.1 301 Moved Permanently\r\nLocation: /otherUrl\r\n\r\n"));
         $respQueue->enqueue(Response::fromString("HTTP/1.1 301 Moved Permanently\r\nLocation: /oneMoreLocation\r\n\r\n"));
-        $respQueue->enqueue(Response::fromString("HTTP/1.1 200 Ok\r\nContent-length: 0\r\n\r\n"));
 
         $request = new Request();
         $request->setUri("http://www.example.com/");
@@ -80,13 +81,39 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $respQueue->enqueue(Response::fromString("HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect1\r\n\r\n"));
         $respQueue->enqueue(Response::fromString("HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect2\r\n\r\n"));
         $respQueue->enqueue(Response::fromString("HTTP/1.1 301 Moved Permanently\r\nLocation: /redirect3\r\n\r\n"));
-        $respQueue->enqueue(Response::fromString("HTTP/1.1 200 Ok\r\nContent-length: 0\r\n\r\n"));
 
         $request = new Request();
         $request->setUri("http://www.example.com/");
         $resp = $this->client->send($request);
 
         $this->assertEquals(301, $resp->getStatusCode());
-        $this->assertEquals("/redirect3", $this->client->headers()->get('Location')->getFieldValue());
+        $this->assertEquals("/redirect3", $resp->headers()->get('Location')->getFieldValue());
+    }
+
+    public function testSettingGlobalHeader()
+    {
+        $uaString = "MyHttpClient\1.1";
+        $this->client->headers()->addHeaderLine("User-agent: $uaString");
+
+        $request = new Request();
+        $request->setUri("http://www.example.com/");
+        $this->assertFalse($request->headers()->has('User-agent'));
+
+        $resp = $this->client->send($request);
+
+        $this->assertEquals($uaString, $request->headers()->get('User-agent')->getFieldValue());
+    }
+
+    public function testSettingGlobalHeaderDoesntOverrideLocalHeader()
+    {
+        $uaString = "OtherHttpClient\1.0";
+        $this->client->headers()->addHeaderLine("User-agent: MyHttpClient\1.1");
+
+        $request = Request::fromString("GET / HTTP/1.1\r\nUser-agent: $uaString\r\n\r\n");
+        $this->assertTrue($request->headers()->has('User-agent'));
+
+        $resp = $this->client->send($request);
+
+        $this->assertEquals($uaString, $request->headers()->get('User-agent')->getFieldValue());
     }
 }
