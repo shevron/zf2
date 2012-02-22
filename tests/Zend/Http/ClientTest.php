@@ -112,6 +112,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->client->headers()->addHeaderLine("User-agent: MyHttpClient\1.1");
 
         $request = Request::fromString("GET / HTTP/1.1\r\nUser-agent: $uaString\r\n\r\n");
+        $request->setUri('http://www.example.com/');
         $this->assertTrue($request->headers()->has('User-agent'));
 
         $resp = $this->client->send($request);
@@ -160,7 +161,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             Response::fromString("HTTP/1.1 200 Ok\r\nContent-length: 0\r\n\r\n")
         );
 
-        $response = $client->send(Request::fromString("GET / HTTP/1.1\r\nUser-agent: foobarclient\r\n\r\n"));
+        $request = Request::fromString("GET / HTTP/1.1\r\nUser-agent: foobarclient\r\n\r\n");
+        $request->setUri('http://www.example.com/');
+        $response = $client->send($request);
 
         $this->assertFalse($client->getTransport()->getOptions()->getSslVerifyPeer());
     }
