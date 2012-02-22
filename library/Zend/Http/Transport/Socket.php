@@ -402,6 +402,7 @@ class Socket implements Transport
     protected function readResponseHeaders(Response $response)
     {
         $header = null;
+        $response->headers()->clearHeaders();
 
         $this->log("Reading response headers", Logger::DEBUG);
         while (! feof($this->socket)) {
