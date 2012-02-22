@@ -68,7 +68,7 @@ class Simple extends AbstractCookieStore
         }
 
         if (! ($url->isAbsolute() && $url->isValid())) {
-            throw new Exception\InvalidArgumentException("Provided URL is not an absolute, valid HTTP URL");
+            throw new Exception\InvalidArgumentException("Provided URL is not an absolute, valid HTTP URL: $url");
         }
 
         $url->normalize();

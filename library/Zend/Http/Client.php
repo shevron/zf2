@@ -26,6 +26,7 @@ namespace Zend\Http;
 use Zend\Uri\Http as HttpUri,
     Zend\Http\Header\Cookie,
     Zend\Http\Header\SetCookie,
+    Zend\Http\CookieStore\AbstractCookieStore,
     Zend\Http\Transport\Transport as HttpTransport,
     Zend\Stdlib\Parameters,
     Zend\Stdlib\ParametersDescription,
@@ -69,6 +70,13 @@ class Client implements Dispatchable
     static protected $defaultTransport = 'Zend\Http\Transport\Socket';
 
     /**
+     * Default cookie storage container class
+     *
+     * @var string
+     */
+    static protected $defaultCookieStore = 'Zend\Http\CookieStore\Simple';
+
+    /**
      * @var Transport
      */
     protected $transport;
@@ -79,9 +87,11 @@ class Client implements Dispatchable
     protected $auth = array();
 
     /**
-     * @var array of Header\SetCookie
+     * Cookie storage object
+     *
+     * @var Zend\Http\CookieStore\AbstractCookieStore
      */
-    protected $cookies = array();
+    protected $cookieStore = null;
 
     /**
      * Global headers
@@ -193,91 +203,29 @@ class Client implements Dispatchable
     }
 
     /**
-     * Return the current cookies
+     * Return the current cookie storage object
      *
-     * @return array
+     * @return Zend\Http\CookieStore\AbstractCookieStore
      */
-    public function getCookies()
+    public function getCookieStore()
     {
-        return $this->cookies;
-    }
-
-    /**
-     * Get the cookie Id (name+domain+path)
-     *
-     * @param  SetCookie|Cookie $cookie
-     * @return string|boolean
-     */
-    protected function getCookieId($cookie)
-    {
-        if (($cookie instanceof SetCookie) || ($cookie instanceof Cookie)) {
-            return $cookie->getName() . $cookie->getDomain() . $cookie->getPath();
+        if (! $this->cookieStore) {
+            $this->cookieStore = new static::$defaultCookieStore;
         }
-        return false;
-    }
 
-    /**
-     * Add a cookie
-     *
-     * @param ArrayIterator|SetCookie|string $cookie
-     * @param string  $value
-     * @param string  $domain
-     * @param string  $expire
-     * @param string  $path
-     * @param boolean $secure
-     * @param boolean $httponly
-     * @return Client
-     */
-    public function addCookie($cookie, $value = null, $domain = null, $expire = null, $path = null, $secure = false, $httponly = true)
-    {
-        if ($cookie instanceof \ArrayIterator) {
-            foreach ($cookie as $setCookie) {
-                if ($setCookie instanceof SetCookie) {
-                    $this->cookies[$this->getCookieId($setCookie)] = $setCookie;
-                } else {
-                    throw new Exception\InvalidArgumentException('The cookie parameter is not a valid Set-Cookie type');
-                }
-            }
-        } elseif ($cookie instanceof SetCookie) {
-            $this->cookies[$this->getCookieId($cookie)] = $cookie;
-        } elseif (is_string($cookie) && $value !== null) {
-            if (!empty($value) && $this->options->getEncodeCookies()) {
-                $value = urlencode($value);
-            }
-
-            $setCookie = new SetCookie($cookie, $value, $domain, $expire, $path, $secure, $httponly);
-            $this->cookies[$this->getCookieId($setCookie)] = $setCookie;
-        } else {
-            throw new Exception\InvalidArgumentException('Invalid parameter type passed as Cookie');
-        }
-        return $this;
+        return $this->cookieStore;
     }
 
     /**
      * Set an array of cookies
      *
-     * @param  array $cookies
-     * @return Client
+     * @param  Zend\Http\CookieStore\AbstractCookieStore $cookieStore
+     * @return Zend\Http\Client
      */
-    public function setCookies($cookies)
+    public function setCookieStore(AbstractCookieStore $cookieStore)
     {
-        if (is_array($cookies)) {
-            $this->clearCookies();
-            foreach ($cookies as $name => $value) {
-                $this->addCookie($name,$value);
-            }
-        } else {
-            throw new Exception\InvalidArgumentException('Invalid cookies passed as parameter, it must be an array');
-        }
+        $this->cookieStore = $cookieStore;
         return $this;
-    }
-
-    /**
-     * Clear all the cookies
-     */
-    public function clearCookies()
-    {
-        $this->cookies = array();
     }
 
     /**
@@ -468,64 +416,29 @@ class Client implements Dispatchable
             }
         }
 
-        $existingCookies = $request->cookie();
-        $cookieHeader = $this->prepareCookies(
-            $existingCookies,
-            $request->uri()->getHost(),
-            $request->uri()->getPath(),
-            $request->uri()->getScheme() == 'https'
-        );
+        $existingCookies = $request->cookie(); /* @var Zend\Http\Header\Cookie */
+        $cookieHeader = $this->getCookieStore()->getCookiesForRequest($request);
 
         if ($existingCookies) {
             $request->headers()->removeHeader($existingCookies);
+            foreach($existingCookies as $key => $value) {
+                $cookieHeader[$key] = $value;
+            }
         }
+
         $request->headers()->addHeader($cookieHeader);
     }
 
+    /**
+     * Handle an incoming response
+     *
+     * Can perform some tasks on incoming responses, such as read and store set
+     * cookies
+     *
+     * @param Zend\Http\Response $response
+     */
     protected function handleResponse(Response $response)
     {
-        // Get the cookies from response (if any)
-        $setCookie = $response->cookie();
-        if (! empty($setCookie)) {
-            $this->addCookie($setCookie);
-        }
-    }
-
-    /**
-     * Prepare Cookies
-     *
-     * @param   Zend\Http\Header\Cookie $existingCookies
-     * @param   string                  $domain
-     * @param   string                  $path
-     * @param   boolean                 $secure
-     * @return  Cookie|boolean
-     */
-    protected function prepareCookies($existingCookies, $domain, $path, $secure)
-    {
-        $validCookies = array();
-
-        if (!empty($this->cookies)) {
-            foreach ($this->cookies as $id => $cookie) {
-                if ($cookie->isExpired()) {
-                    unset($this->cookies[$id]);
-                    continue;
-                }
-
-                if ($cookie->isValidForRequest($domain, $path, $secure)) {
-                    $validCookies[] = $cookie;
-                }
-            }
-        }
-
-        $cookies = Cookie::fromSetCookieArray($validCookies);
-        $cookies->setEncodeValue($this->config['encodecookies']);
-
-        if ($existingCookies instanceof Cookie) {
-            foreach($existingCookies as $cookie) {
-                $cookies->append($cookie);
-            }
-        }
-
-        return $cookies;
+        $this->getCookieStore()->readCookiesFromResponse($response);
     }
 }
