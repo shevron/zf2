@@ -148,6 +148,10 @@ class SetCookie implements MultipleHeaderDescription
             $this->setDomain($domain);
         }
 
+        if ($path) {
+            $this->setPath($path);
+        }
+
         if ($expires) {
             $this->setExpires($expires);
         }
@@ -362,15 +366,15 @@ class SetCookie implements MultipleHeaderDescription
         if ($this->getDomain() && (strrpos($requestDomain, $this->getDomain()) !== false)) {
             return false;
         }
-        
+
         if ($this->getPath() && (strpos($path, $this->getPath()) !== 0)) {
             return false;
         }
-        
+
         if ($this->secure && $this->isSecure()!==$isSecure) {
             return false;
         }
-        
+
         return true;
 
     }
