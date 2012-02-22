@@ -164,7 +164,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $this->assertFalse($client->getTransport()->getOptions()->getSslVerifyPeer());
     }
-
 }
 
 class MockClient extends Client
