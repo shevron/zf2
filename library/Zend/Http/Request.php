@@ -57,21 +57,6 @@ class Request extends Message implements RequestDescription
     protected $postParams = null;
 
     /**
-     * @var \Zend\Stdlib\ParametersDescription
-     */
-    protected $fileParams = null;
-
-    /**
-     * @var \Zend\Stdlib\ParametersDescription
-     */
-    protected $serverParams = null;
-
-    /**
-     * @var \Zend\Stdlib\ParametersDescription
-     */
-    protected $envParams = null;
-
-    /**
      * @var string|\Zend\Http\Headers
      */
     protected $headers = null;
@@ -90,11 +75,7 @@ class Request extends Message implements RequestDescription
 
         // first line must be Method/Uri/Version string
         $matches = null;
-        $methods = implode('|', array(
-            self::METHOD_OPTIONS, self::METHOD_GET, self::METHOD_HEAD, self::METHOD_POST,
-            self::METHOD_PUT, self::METHOD_DELETE, self::METHOD_TRACE, self::METHOD_CONNECT
-        ));
-        $regex = '^(?P<method>' . $methods . ')\s(?<uri>[^ ]*)(?:\sHTTP\/(?<version>\d+\.\d+)){0,1}';
+        $regex = '^(?P<method>\S+)\s(?<uri>[^ ]*)(?:\sHTTP\/(?<version>\d+\.\d+)){0,1}';
         $firstLine = array_shift($lines);
         if (!preg_match('#' . $regex . '#', $firstLine, $matches)) {
             throw new Exception\InvalidArgumentException('A valid request line was not found in the provided string');
@@ -145,11 +126,24 @@ class Request extends Message implements RequestDescription
      */
     public function setMethod($method)
     {
-        $method = strtoupper($method);
-        if (!defined('static::METHOD_'.$method)) {
-            throw new Exception\InvalidArgumentException('Invalid HTTP method passed');
+        if (! is_string($method)) {
+            throw new Exception\InvalidArgumentException('Invalid HTTP method passed: expecting a string');
         }
-        $this->method = $method;
+
+        // For known methods, set uppercase form
+        $upperMethod = strtoupper($method);
+        if (defined('static::METHOD_' . $upperMethod)) {
+            $this->method = $upperMethod;
+
+        // For custom methods validate and set as is
+        } else {
+            if (! static::validateRequestMethod($method)) {
+                throw new Exception\InvalidArgumentException("Invalid HTTP method '$method' passed");
+            }
+
+            $this->method = $method;
+        }
+
         return $this;
     }
 
@@ -164,37 +158,24 @@ class Request extends Message implements RequestDescription
     }
 
     /**
-     * Set the URI/URL for this request, this can be a string or an instance of Zend\Uri\Http
+     * Set the URL for this request.
      *
+     * This must be a valid, absolute HTTP URI. If an object is provided, it
+     * will be copied.
+     *
+     * @param  string|Zend\Uri\Http $uri
+     * @return Zend\Http\Request
      * @throws Exception\InvalidArgumentException
-     * @param string|HttpUri $uri
-     * @return Request
      */
     public function setUri($uri)
     {
-        if (is_string($uri)) {
-            if (!\Zend\Uri\Uri::validateHost($uri)) {
-                throw new Exception\InvalidArgumentException('Invalid URI passed as string');
-            }
-        } elseif (!($uri instanceof \Zend\Uri\Http)) {
-            throw new Exception\InvalidArgumentException('URI must be an instance of Zend\Uri\Http or a string');
+        if (! $uri instanceof HttpUri) {
+            $uri = new HttpUri($uri);
         }
+
         $this->uri = $uri;
 
         return $this;
-    }
-
-    /**
-     * Return the URI for this request object
-     *
-     * @return string
-     */
-    public function getUri()
-    {
-        if ($this->uri instanceof HttpUri) {
-            return $this->uri->toString();
-        }
-        return $this->uri;
     }
 
     /**
@@ -299,88 +280,6 @@ class Request extends Message implements RequestDescription
     public function cookie()
     {
         return $this->headers()->get('Cookie');
-    }
-
-    /**
-     * Provide an alternate Parameter Container implementation for file parameters in this object, (this is NOT the
-     * primary API for value setting, for that see file())
-     *
-     * @param \Zend\Stdlib\ParametersDescription $files
-     * @return Request
-     */
-    public function setFile(ParametersDescription $files)
-    {
-        $this->fileParams = $files;
-        return $this;
-    }
-
-    /**
-     * Return the parameter container responsible for file parameters
-     *
-     * @return ParametersDescription
-     */
-    public function file()
-    {
-        if ($this->fileParams === null) {
-            $this->fileParams = new Parameters();
-        }
-
-        return $this->fileParams;
-    }
-
-    /**
-     * Provide an alternate Parameter Container implementation for server parameters in this object, (this is NOT the
-     * primary API for value setting, for that see server())
-     *
-     * @param \Zend\Stdlib\ParametersDescription $server
-     * @return Request
-     */
-    public function setServer(ParametersDescription $server)
-    {
-        $this->serverParams = $server;
-        return $this;
-    }
-
-    /**
-     * Return the parameter container responsible for server parameters
-     *
-     * @see http://www.faqs.org/rfcs/rfc3875.html
-     * @return \Zend\Stdlib\ParametersDescription
-     */
-    public function server()
-    {
-        if ($this->serverParams === null) {
-            $this->serverParams = new Parameters();
-        }
-
-        return $this->serverParams;
-    }
-
-    /**
-     * Provide an alternate Parameter Container implementation for env parameters in this object, (this is NOT the
-     * primary API for value setting, for that see env())
-     *
-     * @param \Zend\Stdlib\ParametersDescription $env
-     * @return \Zend\Http\Request
-     */
-    public function setEnv(ParametersDescription $env)
-    {
-        $this->envParams = $env;
-        return $this;
-    }
-
-    /**
-     * Return the parameter container responsible for env parameters
-     *
-     * @return \Zend\Stdlib\ParametersDescription
-     */
-    public function env()
-    {
-        if ($this->envParams === null) {
-            $this->envParams = new Parameters();
-        }
-
-        return $this->envParams;
     }
 
     /**
@@ -525,4 +424,21 @@ class Request extends Message implements RequestDescription
         return $this->toString();
     }
 
+    /**
+     * Validate an HTTP request method
+     *
+     * According to the HTTP/1.1 standard, valid request methods are composed
+     * of 1 or more TOKEN characters, which are printable ASCII characters
+     * other than "separator" characters
+     *
+     * @see http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.1
+     * @param  string $method
+     * @return boolean
+     */
+    public static function validateRequestMethod($method)
+    {
+        return (bool) preg_match(
+            '/^[^\x00-\x1f\x7f-\xff\(\)<>@,;:\\\\"<>\/\[\]\?={}\s]+$/', $method
+        );
+    }
 }

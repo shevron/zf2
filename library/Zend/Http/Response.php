@@ -351,28 +351,7 @@ class Response extends Message implements ResponseDescription
      */
     public function getBody()
     {
-        $body = (string) $this->getContent();
-
-        $transferEncoding = $this->headers()->get('Transfer-Encoding');
-
-        if (!empty($transferEncoding)) {
-            if (strtolower($transferEncoding->getFieldValue()) == 'chunked') {
-                $body = $this->decodeChunkedBody($body);
-            }
-        }
-
-        $contentEncoding = $this->headers()->get('Content-Encoding');
-        
-        if (!empty($contentEncoding)) {
-            $contentEncoding = $contentEncoding->getFieldValue();
-            if ($contentEncoding =='gzip') {
-                $body = $this->decodeGzip($body);
-            } elseif ($contentEncoding == 'deflate') {
-                 $body = $this->decodeDeflate($body);
-            }
-        }
-
-        return $body;
+        return (string) $this->getContent();
     }
     
     /**
@@ -474,97 +453,4 @@ class Response extends Message implements ResponseDescription
         $str .= $this->getBody();
         return $str;
     }
-    
-    /**
-     * Decode a "chunked" transfer-encoded body and return the decoded text
-     *
-     * @param string $body
-     * @return string
-     */
-    protected function decodeChunkedBody($body)
-    {
-        $decBody = '';
-
-        // If mbstring overloads substr and strlen functions, we have to
-        // override it's internal encoding
-        if (function_exists('mb_internal_encoding') &&
-           ((int) ini_get('mbstring.func_overload')) & 2) {
-
-            $mbIntEnc = mb_internal_encoding();
-            mb_internal_encoding('ASCII');
-        }
-
-        while (trim($body)) {
-            if (! preg_match("/^([\da-fA-F]+)[^\r\n]*\r\n/sm", $body, $m)) {
-                throw new Exception\RuntimeException("Error parsing body - doesn't seem to be a chunked message");
-            }
-
-            $length = hexdec(trim($m[1]));
-            $cut = strlen($m[0]);
-            $decBody .= substr($body, $cut, $length);
-            $body = substr($body, $cut + $length + 2);
-        }
-
-        if (isset($mbIntEnc)) {
-            mb_internal_encoding($mbIntEnc);
-        }
-
-        return $decBody;
-    }
-
-    /**
-     * Decode a gzip encoded message (when Content-encoding = gzip)
-     *
-     * Currently requires PHP with zlib support
-     *
-     * @param string $body
-     * @return string
-     */
-    protected function decodeGzip($body)
-    {
-        if (!function_exists('gzinflate')) {
-            throw new Exception\RuntimeException(
-                'zlib extension is required in order to decode "gzip" encoding'
-            );
-        }
-
-        return gzinflate(substr($body, 10));
-    }
-
-    /**
-     * Decode a zlib deflated message (when Content-encoding = deflate)
-     *
-     * Currently requires PHP with zlib support
-     *
-     * @param string $body
-     * @return string
-     */
-    protected function decodeDeflate($body)
-    {
-        if (!function_exists('gzuncompress')) {
-            throw new Exception\RuntimeException(
-                'zlib extension is required in order to decode "deflate" encoding'
-            );
-        }
-
-        /**
-         * Some servers (IIS ?) send a broken deflate response, without the
-         * RFC-required zlib header.
-         *
-         * We try to detect the zlib header, and if it does not exsit we
-         * teat the body is plain DEFLATE content.
-         *
-         * This method was adapted from PEAR HTTP_Request2 by (c) Alexey Borzov
-         *
-         * @link http://framework.zend.com/issues/browse/ZF-6040
-         */
-        $zlibHeader = unpack('n', substr($body, 0, 2));
-        
-        if ($zlibHeader[1] % 31 == 0) {
-            return gzuncompress($body);
-        } else {
-            return gzinflate($body);
-        }
-    }
-
 }

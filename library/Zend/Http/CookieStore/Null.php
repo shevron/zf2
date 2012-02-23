@@ -1,0 +1,26 @@
+<?php
+
+namespace Zend\Http\CookieStore;
+
+use Zend\Http\Header\SetCookie as SetCookieHeader,
+    Zend\Http\Header\Cookie as CookieHeader,
+    Zend\Http\Request,
+    Zend\Http\Response;
+
+class Null extends AbstractCookieStore
+{
+    public function addCookie($name, $value, $domain, $expires = null, $path = null, $secure = false, $httpOnly = true)
+    {
+        return $this;
+    }
+
+    public function getMatchingCookies($url, $includeSessionCookies = true, $now = null)
+    {
+        return array();
+    }
+
+    public function getIterator()
+    {
+        return new \EmptyIterator();
+    }
+}
