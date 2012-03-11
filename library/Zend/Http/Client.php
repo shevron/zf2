@@ -426,7 +426,9 @@ class Client implements Dispatchable
             }
         }
 
-        $request->headers()->addHeader($cookieHeader);
+        if (count($cookieHeader)) {
+            $request->headers()->addHeader($cookieHeader);
+        }
     }
 
     /**
