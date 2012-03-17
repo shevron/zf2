@@ -12,7 +12,7 @@ use ArrayObject,
     Zend\Http\PhpEnvironment\Response as PhpHttpResponse,
     Zend\Uri\Http as HttpUri,
     Zend\Stdlib\Dispatchable,
-    Zend\Stdlib\IsAssocArray,
+    Zend\Stdlib\ArrayUtils,
     Zend\Stdlib\Parameters,
     Zend\Stdlib\RequestDescription as Request,
     Zend\Stdlib\ResponseDescription as Response;
@@ -27,9 +27,11 @@ use ArrayObject,
  */
 class Application implements AppContext
 {
-    const ERROR_CONTROLLER_NOT_FOUND = 404;
-    const ERROR_CONTROLLER_INVALID   = 404;
-    const ERROR_EXCEPTION            = 500;
+    const ERROR_CONTROLLER_CANNOT_DISPATCH = 'error-controller-cannot-dispatch';
+    const ERROR_CONTROLLER_NOT_FOUND       = 'error-controller-not-found';
+    const ERROR_CONTROLLER_INVALID         = 'error-controller-invalid';
+    const ERROR_EXCEPTION                  = 'error-exception';
+    const ERROR_ROUTER_NO_MATCH            = 'error-router-no-match';
 
     protected $event;
     protected $events;
@@ -388,7 +390,7 @@ class Application implements AppContext
         complete:
 
         if (!is_object($return)) {
-            if (IsAssocArray::test($return)) {
+            if (ArrayUtils::hasStringKeys($return)) {
                 $return = new ArrayObject($return, ArrayObject::ARRAY_AS_PROPS);
             }
         }
