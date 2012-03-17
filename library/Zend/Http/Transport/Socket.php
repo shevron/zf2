@@ -23,24 +23,6 @@ class Socket implements Transport
     );
 
     /**
-     * Whether to use keep-alive if server allows it
-     *
-     * HTTP Keep-alive allows sending multiple HTTP request on a single TCP
-     * connection, thus improving efficiency of consecutive requests to the
-     * same server.
-     *
-     * @var boolean
-     */
-    protected $keepAlive             = true;
-
-    /**
-     * Timeout in seconds for connecting to and reading from the server
-     *
-     * @var integer
-     */
-    protected $timeout               = 30;
-
-    /**
      * Options object
      *
      * @var Zend\Http\Transport\SocketOptions
@@ -71,16 +53,6 @@ class Socket implements Transport
      * @var resource
      */
     protected $context = null;
-
-    /**
-     * A content encoding filter object
-     *
-     * Content encoding filters are used to handle Content-Encoding of the
-     * HTTP response body
-     *
-     * @var Zend\Log\Logger
-     */
-    protected $logger                = null;
 
     /**
      * A content encoding filter object
@@ -190,9 +162,6 @@ class Socket implements Transport
     {
         $this->log("Sending {$request->getMethod()} request to {$request->uri()}", Logger::NOTICE);
 
-        // Prepare request
-        $this->prepareRequest($request);
-
         // Connect to remote server
         $this->connect($request);
 
@@ -209,35 +178,6 @@ class Socket implements Transport
         }
 
         return $response;
-    }
-
-    /**
-     * Prepare any request headers that are affected by the transport
-     *
-     * @param Zend\Http\Request $request
-     */
-    protected function prepareRequest(Request $request)
-    {
-        if (! $request->headers()->has('Connection')) {
-            $request->headers()->addHeaderLine(
-                'Connection',
-                $this->options->getKeepAlive() ? 'keep-alive' : 'close'
-            );
-        }
-
-        if (! $request->headers()->has('host')) {
-            $host = $request->uri()->getHost();
-            if ($host) {
-                $scheme = $request->uri()->getScheme();
-                $port = $request->uri()->getPort();
-                if (($scheme == 'http' && $port != 80) ||
-                    ($scheme == 'https' && $port != 443)) {
-                    $host .= ":$port";
-                }
-            }
-
-            $request->headers()->addHeaderLine('Host', $host);
-        }
     }
 
     /**
@@ -345,9 +285,10 @@ class Socket implements Transport
         }
 
     	$headers = $request->getMethod() . " " .
-    	           $requestUri . " " .
-    	           "HTTP/" . $request->getVersion() . "\r\n" .
-    			   $request->headers()->toString() . "\r\n";
+                   $requestUri . " " .
+                   "HTTP/" . $request->getVersion() . "\r\n" .
+                   $request->headers()->toString() .
+                   $this->getExtraHeaders($request) . "\r\n";
 
         if (! fwrite($this->socket, $headers)) {
             throw new Exception\ConnectionException("Failed writing request headers to $this->connectedTo");
@@ -358,6 +299,37 @@ class Socket implements Transport
             $this->log("Sending request body", Logger::INFO);
             $this->sendBody($body);
         }
+    }
+
+    /**
+     * Get any extra headers that need to be sent by the transport layer
+     *
+     * @param  Zend\Http\Request $request
+     * @return string
+     */
+    protected function getExtraHeaders(Request $request)
+    {
+        $headers = '';
+
+        if (! $request->headers()->has('connection')) {
+            $headers .= "Connection: " . ($this->options->getKeepAlive() ? 'keep-alive' : 'close') . "\r\n";
+        }
+
+        if (! $request->headers()->has('host')) {
+            $host = $request->uri()->getHost();
+            if ($host) {
+                $scheme = $request->uri()->getScheme();
+                $port = $request->uri()->getPort();
+                if (($scheme == 'http' && $port != 80) ||
+                ($scheme == 'https' && $port != 443)) {
+                    $host .= ":$port";
+                }
+            }
+
+            $headers .= "Host: $host\r\n";
+        }
+
+        return $headers;
     }
 
     /**
