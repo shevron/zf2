@@ -37,7 +37,7 @@ class Request extends Message implements RequestDescription
     protected $method = self::METHOD_GET;
 
     /**
-     * @var string|HttpUri
+     * @var Zend\Uri\Http
      */
     protected $uri = null;
 
@@ -160,22 +160,14 @@ class Request extends Message implements RequestDescription
     /**
      * Set the URL for this request.
      *
-     * This must be a valid, absolute HTTP URI. If an object is provided, it
-     * will be copied.
+     * If an object is provided, it will be copied.
      *
      * @param  string|Zend\Uri\Http $uri
      * @return Zend\Http\Request
-     * @throws Exception\InvalidArgumentException
      */
     public function setUri($uri)
     {
-        $uri = new HttpUri($uri);
-        if (! $uri->isValid()) {
-            throw new Exception\InvalidArgumentException("Provided URI '$uri' is not an absolute, valid HTTP URI");
-        }
-
-        $this->uri = $uri->normalize();
-
+        $this->uri = new HttpUri($uri);
         return $this;
     }
 
@@ -186,9 +178,6 @@ class Request extends Message implements RequestDescription
      */
     public function uri()
     {
-        if ($this->uri === null || is_string($this->uri)) {
-            $this->uri = new \Zend\Uri\Http($this->uri);
-        }
         return $this->uri;
     }
 

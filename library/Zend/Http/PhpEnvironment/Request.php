@@ -320,11 +320,14 @@ class Request extends HttpRequest
             $requestUri = $this->server()->get('REQUEST_URI');
         }
         if ($requestUri !== null) {
-            $schemeAndHttpHost = $this->uri()->getScheme() . '://' . $this->uri()->getHost();
+            if ($this->uri()) {
+                $schemeAndHttpHost = $this->uri()->getScheme() . '://' . $this->uri()->getHost();
 
-            if (strpos($requestUri, $schemeAndHttpHost) === 0) {
-                $requestUri = substr($requestUri, strlen($schemeAndHttpHost));
+                if (strpos($requestUri, $schemeAndHttpHost) === 0) {
+                    $requestUri = substr($requestUri, strlen($schemeAndHttpHost));
+                }
             }
+
             return $requestUri;
         }
 

@@ -162,6 +162,11 @@ class Socket implements Transport
     {
         $this->log("Sending {$request->getMethod()} request to {$request->uri()}", Logger::NOTICE);
 
+        if (! ($request->uri()->isAbsolute() && $request->uri()->isValid())) {
+            throw new Exception\InvalidArgumentException("Provided request must have a valid, absolute HTTP URI");
+        }
+        $request->uri()->normalize();
+
         // Connect to remote server
         $this->connect($request);
 
