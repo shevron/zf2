@@ -85,6 +85,17 @@ class Options extends \Zend\Stdlib\Options implements \IteratorAggregate
      */
     protected $sslCaFile = null;
 
+    /**
+     * Path to the SSL certificate authority directory
+     *
+     * Similar to $sslCaFile but allows pointing a cerificate directory.
+     * The format in which the directory is organized may be implementation
+     * specific.
+     *
+     * @var string
+     */
+    protected $sslCaPath = null;
+
 	/**
      * @return the $keepAlive
      */
@@ -147,6 +158,14 @@ class Options extends \Zend\Stdlib\Options implements \IteratorAggregate
     public function getSslCaFile()
     {
         return $this->sslCaFile;
+    }
+
+    /**
+     * @return the $sslCaPath
+     */
+    public function getSslCaPath()
+    {
+        return $this->sslCaPath;
     }
 
 	/**
@@ -224,6 +243,15 @@ class Options extends \Zend\Stdlib\Options implements \IteratorAggregate
     public function setSslCaFile($sslCaFile)
     {
         $this->sslCaFile = $sslCaFile;
+        return $this;
+    }
+
+    /**
+     * @param string $sslCaPath
+     */
+    public function setSslCaPath($sslCaPath)
+    {
+        $this->sslCaPath = $sslCaPath;
         return $this;
     }
 
