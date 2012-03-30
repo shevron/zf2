@@ -238,6 +238,12 @@ class Socket implements Transport
                         throw new Exception\ConfigurationException('Unable to set SSL cafile option');
                     }
                 }
+
+                if ($this->options->getSslCaPath()) {
+                    if (! stream_context_set_option($context, 'ssl', 'capth', $this->options->getSslCaPath())) {
+                        throw new Exception\ConfigurationException('Unable to set SSL capth option');
+                    }
+                }
             }
 
             $this->socket = @stream_socket_client(
