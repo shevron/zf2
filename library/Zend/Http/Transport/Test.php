@@ -8,6 +8,13 @@ use Zend\Http\Request,
 class Test implements Transport
 {
     /**
+     * Request queue - if set, will be populated with request objects sent out
+     *
+     *  @var \SplQueue
+     */
+    protected $requestQueue;
+
+    /**
      * Response queue
      *
      * @var \SplQueue
@@ -37,6 +44,10 @@ class Test implements Transport
      */
     public function send(Request $request, Response $response = null)
     {
+        if ($this->requestQueue instanceof \SplQueue) {
+            $this->requestQueue->enqueue($request);
+        }
+
         if (count($this->getResponseQueue())) {
             return $this->getResponseQueue()->dequeue();
         } elseif ($this->defaultResponse) {
@@ -61,42 +72,34 @@ class Test implements Transport
     }
 
     /**
-     * Get options for the socket transport object
+     * Set the request queue. If nothing is passed, a new queue will be created.
      *
-     * @return Zend\Http\Transport\Options
-     * @see    Zend\Http\Transport\Transport::getOptions()
+     * If set, the request queue will store all requests passing through the
+     * transport adapter.
+     *
+     * @param \SplQueue $queue
+     * @return \Zend\Http\Transport\Test
      */
-    public function getOptions()
+    public function setRequestQueue(\SplQueue $queue = null)
     {
-        if (! $this->options) {
-            $this->options = new Options();
+        if ($queue === null) {
+            $queue = new \SplQueue();
         }
 
-        return $this->options;
+        $this->requestQueue = $queue;
+        return $this;
     }
 
     /**
      * Set the response queue object
      *
      * @param \SplQueue $queue
+     * @return \Zend\Http\Transport\Test
      */
     public function setResponseQueue(\SplQueue $queue)
     {
         $this->responseQueue = $queue;
-    }
-
-    /**
-     * Get the response queue object
-     *
-     * @return \SplQueue
-     */
-    public function getResponseQueue()
-    {
-        if (! $this->responseQueue) {
-            $this->responseQueue = new \SplQueue();
-        }
-
-        return $this->responseQueue;
+        return $this;
     }
 
     /**
@@ -112,6 +115,21 @@ class Test implements Transport
     }
 
     /**
+     * Get options for the test transport object
+     *
+     * @return Zend\Http\Transport\Options
+     * @see    Zend\Http\Transport\Transport::getOptions()
+     */
+    public function getOptions()
+    {
+        if (! $this->options) {
+            $this->options = new Options();
+        }
+
+        return $this->options;
+    }
+
+    /**
      * Get the default response object, or null if none was set
      *
      * @return Zend\Http\Response
@@ -119,5 +137,29 @@ class Test implements Transport
     public function getDefaultResponse()
     {
         return $this->defaultResponse;
+    }
+
+    /**
+     * Get the request queue, if set
+     *
+     * @return \SplQueue
+     */
+    public function getRequestQueue()
+    {
+        return $this->requestQueue;
+    }
+
+    /**
+     * Get the response queue object
+     *
+     * @return \SplQueue
+     */
+    public function getResponseQueue()
+    {
+        if (! $this->responseQueue) {
+            $this->responseQueue = new \SplQueue();
+        }
+
+        return $this->responseQueue;
     }
 }
