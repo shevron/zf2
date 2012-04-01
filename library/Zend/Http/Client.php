@@ -443,4 +443,91 @@ class Client implements Dispatchable
     {
         $this->getCookieStore()->readCookiesFromResponse($response);
     }
+
+    /**
+     * HTTP DSL methods
+     */
+
+    /**
+     * GET a URL
+     *
+     * This is a convenience method for quickly sending a GET request to the
+     * provided URL, without manually creating a request object
+     *
+     * @param  Zend\Uri\Http|string $url
+     * @return Zend\Http\Response
+     */
+    public function get($url)
+    {
+        $request = new Request($url);
+        $request->setMethod(Request::METHOD_GET);
+
+        return $this->send($request);
+    }
+
+    /**
+     * Send an HTTP POST request to the specified URL with an optional payload
+     *
+     * @param  Zend\Uri\Http|string $url
+     * @param  mixed                $content
+     * @param  string               $contentType
+     * @return Zend\Http\Response
+     */
+    public function post($url, $content = null, $contentType = null)
+    {
+        $request = new Request($url);
+        $request->setMethod(Request::METHOD_POST);
+
+        if ($content) {
+            $request->setContent($content);
+        }
+
+        if ($contentType) {
+            $request->headers()->addHeaderLine("Content-type", $contentType);
+        } else {
+            $request->headers()->addHeaderLine("Content-type", "application/octet-stream");
+        }
+
+        return $this->send($request);
+    }
+
+    /**
+     * Send an HTTP PUT request to the specified URL with a payload
+     *
+     * @param  Zend\Uri\Http|string $url
+     * @param  mixed                $content
+     * @param  string               $contentType
+     * @return Zend\Http\Response
+     */
+    public function put($url, $content, $contentType = null)
+    {
+        $request = new Request($url);
+        $request->setMethod(Request::METHOD_PUT);
+
+        if ($content) {
+            $request->setContent($content);
+        }
+
+        if ($contentType) {
+            $request->headers()->addHeaderLine("Content-type", $contentType);
+        } else {
+            $request->headers()->addHeaderLine("Content-type", "application/octet-stream");
+        }
+
+        return $this->send($request);
+    }
+
+    /**
+     * Send an HTTP DELETE request to the specified URL
+     *
+     * @param  Zend\Uri\Http|string $url
+     * @return Zend\Http\Response
+     */
+    public function delete($url)
+    {
+        $request = new Request($url);
+        $request->setMethod(Request::METHOD_DELETE);
+
+        return $this->send($request);
+    }
 }

@@ -62,6 +62,18 @@ class Request extends Message implements RequestDescription
     protected $headers = null;
 
     /**
+     * Create a new Request object, optionally setting the request URI
+     *
+     * @param \Zend\Uri\Http|string $uri
+     */
+    public function __construct($uri = null)
+    {
+        if ($uri) {
+            $this->setUri($uri);
+        }
+    }
+
+    /**
      * A factory that produces a Request object from a well-formed Http Request string
      *
      * @param string $string
