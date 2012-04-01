@@ -46,7 +46,17 @@ class Request extends HttpRequest
      */
     protected $envParams = null;
 
-    public function __construct()
+    /**
+     * Create a new Request object.
+     *
+     * Request data is pre-populated from the current PHP environment request
+     * information ($_GET, $_POST, $_SERVER, $_COOKIE, $_FILES and $_ENV).
+     *
+     * You may pass a URI, but normally there is no reason to do that.
+     *
+     * @param \Zend\Uri\Http|string $uri
+     */
+    public function __construct($uri = null)
     {
         $this->setEnv(new Parameters($_ENV));
         $this->setPost(new Parameters($_POST));
@@ -60,6 +70,8 @@ class Request extends HttpRequest
         if ($_FILES) {
             $this->setFile(new Parameters($_FILES));
         }
+
+        parent::__construct($uri);
     }
 
     public function setCookies($cookie)
