@@ -67,6 +67,16 @@ class SmartBuffer extends Entity implements Writable, Rewindable
         return fread($this->stream, $this->chunkSize);
     }
 
+    public function getLength()
+    {
+        $pos = ftell($this->stream);
+        fseek($this->stream, 0, SEEK_END);
+        $length = ftell($this->stream);
+        fseek($this->stream, $pos);
+
+        return $length;
+    }
+
     /**
      * Write data to the entity
      *

@@ -31,6 +31,16 @@ class String extends Entity implements Writable, Rewindable
     }
 
     /**
+     * Get the length in bytes of the entity
+     *
+     * @see Zend\Http\Entity\Entity::getLength()
+     */
+    public function getLength()
+    {
+        return strlen($this->data);
+    }
+
+    /**
      * Write data to the stream
      *
      * @see Zend\Http\Entity.Writable::write()

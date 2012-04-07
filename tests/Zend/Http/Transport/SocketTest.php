@@ -102,6 +102,25 @@ class SocketTest extends \PHPUnit_Framework_TestCase
         $this->assertRegExp("/\r\n\r\n$/", $requestStr);
     }
 
+    public function testSimplePostRequestWithUrlencodedData()
+    {
+        $transport = new MockSocketTransport();
+
+        $request = new Request();
+        $request->setUri('http://localhost/')
+                ->setMethod('POST')
+                ->post()->fromArray(array('foo' => 'bar'));
+
+        $request->headers()->addHeaderLine('Content-type', 'application/x-www-form-urlencoded')
+                           ->addHeaderLine('Content-length', $request->getContent()->getLength());
+
+        $transport->setNextResponse($this->getSimpleResponseString());
+        $transport->send($request);
+        $requestStr = $transport->getLastRequest();
+
+        $this->assertRegExp("/\r\nfoo=bar$/", $requestStr);
+    }
+
     public function testConnectionHeaderIsAddedKeepaliveOn()
     {
         $transport = new MockSocketTransport();

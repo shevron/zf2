@@ -429,6 +429,11 @@ class Client implements Dispatchable
         if (count($cookieHeader)) {
             $request->headers()->addHeader($cookieHeader);
         }
+
+        // Handle POST content
+        if ($request->getContent() instanceof Entity\FormDataHandler) {
+            $request->getContent()->processRequestHeaders($request->headers());
+        }
     }
 
     /**
