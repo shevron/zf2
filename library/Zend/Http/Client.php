@@ -432,7 +432,7 @@ class Client implements Dispatchable
 
         // Handle POST content
         if ($request->getContent() instanceof Entity\FormDataHandler) {
-            $request->getContent()->processRequestHeaders($request->headers());
+            $request->getContent()->prepareRequestHeaders($request->headers());
         }
     }
 
