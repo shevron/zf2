@@ -6,6 +6,7 @@ use Zend\Http\Request,
     Zend\Http\Response,
     Zend\Http\Entity\Entity,
     Zend\Http\Entity\Writable as WritableEntity,
+    Zend\Http\Entity\UrlEncodedFormData,
     Zend\Http\Header\ContentEncoding as CEHeader,
     Zend\Log\Logger;
 
@@ -290,11 +291,12 @@ class Socket implements Transport
             $requestUri .= "?$query";
         }
 
+        $this->prepareExtraHeaders($request);
+
     	$headers = $request->getMethod() . " " .
                    $requestUri . " " .
                    "HTTP/" . $request->getVersion() . "\r\n" .
-                   $request->headers()->toString() .
-                   $this->getExtraHeaders($request) . "\r\n";
+                   $request->headers()->toString() . "\r\n";
 
         if (! fwrite($this->socket, $headers)) {
             throw new Exception\ConnectionException("Failed writing request headers to $this->connectedTo");
@@ -308,20 +310,15 @@ class Socket implements Transport
     }
 
     /**
-     * Get any extra headers that need to be sent by the transport layer
+     * Prepare and add any extra headers needed by the transport layer to the request
      *
      * @param  Zend\Http\Request $request
-     * @return string
      */
-    protected function getExtraHeaders(Request $request)
+    protected function prepareExtraHeaders(Request $request)
     {
-        $headers = '';
+        $headers = $request->headers();
 
-        if (! $request->headers()->has('connection')) {
-            $headers .= "Connection: " . ($this->options->getKeepAlive() ? 'keep-alive' : 'close') . "\r\n";
-        }
-
-        if (! $request->headers()->has('host')) {
+        if (! $headers->has('host')) {
             $host = $request->uri()->getHost();
             if ($host) {
                 $scheme = $request->uri()->getScheme();
@@ -332,10 +329,12 @@ class Socket implements Transport
                 }
             }
 
-            $headers .= "Host: $host\r\n";
+            $headers->addHeaderLine('Host', $host);
         }
 
-        return $headers;
+        if (! $headers->has('connection')) {
+            $headers->addHeaderLine('Connection', $this->options->getKeepAlive() ? 'keep-alive' : 'close');
+        }
     }
 
     /**

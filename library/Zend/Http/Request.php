@@ -265,6 +265,14 @@ class Request extends Message implements RequestDescription
      */
     public function setPost(ParametersDescription $post)
     {
+        if (! $this->content) {
+            $this->setContent(new Entity\UrlEncodedFormData());
+        }
+
+        if ($this->content instanceof Entity\FormDataHandler) {
+            $this->content->setFormData($post);
+        }
+
         $this->postParams = $post;
         return $this;
     }
@@ -277,7 +285,7 @@ class Request extends Message implements RequestDescription
     public function post()
     {
         if ($this->postParams === null) {
-            $this->postParams = new Parameters();
+            $this->setPost(new Parameters());
         }
 
         return $this->postParams;
@@ -320,6 +328,23 @@ class Request extends Message implements RequestDescription
         }
 
         return $this->headers;
+    }
+
+    /**
+     * Set message content
+     *
+     * @param  mixed $value
+     * @return Message
+     */
+    public function setContent($value)
+    {
+        $ret = parent::setContent($value);
+
+        if ($value instanceof Entity\FormDataHandler) {
+            $value->setFormData($this->post());
+        }
+
+        return $ret;
     }
 
     /**

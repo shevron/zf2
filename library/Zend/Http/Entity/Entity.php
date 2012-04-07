@@ -6,6 +6,8 @@ abstract class Entity
 {
     abstract public function read();
 
+    abstract public function getLength();
+
     public function toString()
     {
         if ($this instanceof Rewindable) {
