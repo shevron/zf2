@@ -484,7 +484,15 @@ class Client implements Dispatchable
         $request->setMethod(Request::METHOD_POST);
 
         if ($content) {
-            $request->setContent($content);
+            if (is_array($content)) {
+                $request->setPost(new Parameters($content));
+            } elseif ($content instanceof ParametersDescription) {
+                $request->setPost($content);
+            } elseif (is_string($content) || $content instanceof Entity\Entity) {
+                $request->setContent($content);
+            } else {
+                throw new Exception\InvalidArgumentException("Invalid argument provided for post request content");
+            }
         }
 
         if ($contentType) {
