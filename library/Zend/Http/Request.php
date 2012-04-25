@@ -342,6 +342,16 @@ class Request extends Message implements RequestDescription
 
         if ($value instanceof Entity\FormDataHandler) {
             $value->setFormData($this->post());
+
+        } elseif (! $value) {
+            // Reset content headers
+            if ($this->headers()->has('Content-type')) {
+                $this->headers()->removeHeader($this->headers()->get('Content-type'));
+            }
+
+            if ($this->headers()->has('Content-length')) {
+                $this->headers()->removeHeader($this->headers()->get('Content-length'));
+            }
         }
 
         return $ret;
