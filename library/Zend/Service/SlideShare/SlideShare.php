@@ -19,14 +19,11 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\Service\SlideShare;
 
 use SimpleXMLElement,
     Zend\Cache\StorageFactory as CacheFactory,
-    Zend\Cache\Storage\Adapter as CacheAdapter,
+    Zend\Cache\Storage\Adapter\AdapterInterface as CacheAdapter,
     Zend\Http,
     Zend\Http\Client;
 

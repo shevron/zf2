@@ -18,9 +18,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\Translator\Adapter;
 use Zend\Translator\Adapter\AbstractAdapter,
     Zend\Translator,
@@ -41,7 +38,6 @@ class XmlTm extends AbstractAdapter
 {
     // Internal variables
     private $_file        = false;
-    private $_cleared     = array();
     private $_lang        = null;
     private $_content     = null;
     private $_tag         = null;

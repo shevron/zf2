@@ -19,12 +19,7 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\Barcode\Object\Exception;
-
-use Zend\Barcode\Object\Exception;
 
 /**
  * Exception for Zend_Barcode component.
@@ -36,6 +31,6 @@ use Zend\Barcode\Object\Exception;
  */
 class RuntimeException
     extends \RuntimeException
-    implements Exception
+    implements ExceptionInterface
 {
 }

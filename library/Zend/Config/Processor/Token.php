@@ -18,9 +18,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\Config\Processor;
 
 use Zend\Config\Config,
@@ -32,7 +29,7 @@ use Zend\Config\Config,
 /**
  * @category   Zend
  * @package    Zend_Config
- * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Token implements Processor
@@ -200,7 +197,7 @@ class Token implements Processor
             foreach ($this->tokens as $token => $value) {
                 $this->map[$this->prefix . $token . $this->suffix] = $value;
             }
-	}
+        }
     }
 
     /**
@@ -228,7 +225,7 @@ class Token implements Processor
             if ($val instanceof Config) {
                 $this->process($val);
             } else {
-                $config->$key = str_replace($keys,$values,$val);
+                $config->$key = str_replace($keys, $values, $val);
             }
         }
 
@@ -248,6 +245,6 @@ class Token implements Processor
         }
         $keys = array_keys($this->map);
         $values = array_values($this->map);
-        return str_replace($keys,$values,$value);
+        return str_replace($keys, $values, $value);
     }
 }

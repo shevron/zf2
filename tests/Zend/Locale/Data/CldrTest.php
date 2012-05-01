@@ -25,7 +25,7 @@ use Zend\Locale\Data\Cldr,
     Zend\Locale\Exception\InvalidArgumentException,
     Zend\Locale\Locale,
     Zend\Cache\StorageFactory as CacheFactory,
-    Zend\Cache\Storage\Adapter as CacheAdapter;
+    Zend\Cache\Storage\Adapter\AdapterInterface as CacheAdapter;
 
 /**
  * @category   Zend
@@ -107,6 +107,18 @@ class CldrTest extends \PHPUnit_Framework_TestCase
 
         $value = Cldr::getDisplayLanguage('de', false, 'de');
         $this->assertEquals('Deutsch', $value);
+    }
+    
+    /**
+     * test for reading the territorylist in different
+     * languages
+     */
+    public function testTerritoryLanguage()
+    {
+        $this->assertNotEquals(
+            Cldr::getDisplayTerritory('de'),
+            Cldr::getDisplayTerritory('en')
+        );
     }
 
     /**

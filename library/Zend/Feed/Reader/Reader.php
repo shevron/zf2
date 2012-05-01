@@ -18,12 +18,9 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
-* @namespace
-*/
 namespace Zend\Feed\Reader;
 
-use Zend\Cache\Storage\Adapter as CacheAdapter,
+use Zend\Cache\Storage\Adapter\AdapterInterface as CacheAdapter,
     Zend\Http,
     Zend\Loader,
     Zend\Stdlib\ErrorHandler;

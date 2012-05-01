@@ -22,6 +22,8 @@ namespace Zend\View;
 
 use Zend\EventManager\EventCollection,
     Zend\EventManager\EventManager,
+    Zend\EventManager\EventManagerAware,
+    Zend\Mvc\MvcEvent,
     Zend\Stdlib\RequestDescription as Request,
     Zend\Stdlib\ResponseDescription as Response;
 
@@ -31,7 +33,7 @@ use Zend\EventManager\EventCollection,
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class View
+class View implements EventManagerAware
 {
     /**
      * @var EventCollection
@@ -50,8 +52,8 @@ class View
 
     /**
      * Set MVC request object
-     * 
-     * @param  Request $request 
+     *
+     * @param  Request $request
      * @return View
      */
     public function setRequest(Request $request)
@@ -61,9 +63,9 @@ class View
     }
 
     /**
-     * Set MVC response object 
-     * 
-     * @param  Response $response 
+     * Set MVC response object
+     *
+     * @param  Response $response
      * @return View
      */
     public function setResponse(Response $response)
@@ -74,7 +76,7 @@ class View
 
     /**
      * Get MVC request object
-     * 
+     *
      * @return null|Request
      */
     public function getRequest()
@@ -84,7 +86,7 @@ class View
 
     /**
      * Get MVC response object
-     * 
+     *
      * @return null|Response
      */
     public function getResponse()
@@ -94,8 +96,8 @@ class View
 
     /**
      * Set the event manager instance
-     * 
-     * @param  EventCollection $events 
+     *
+     * @param  EventCollection $events
      * @return View
      */
     public function setEventManager(EventCollection $events)
@@ -108,7 +110,7 @@ class View
      * Retrieve the event manager instance
      *
      * Lazy-loads a default instance if none available
-     * 
+     *
      * @return EventCollection
      */
     public function events()
@@ -128,16 +130,16 @@ class View
      * Expects a callable. Strategies should accept a ViewEvent object, and should
      * return a Renderer instance if the strategy is selected.
      *
-     * Internally, the callable provided will be subscribed to the "renderer" 
+     * Internally, the callable provided will be subscribed to the "renderer"
      * event, at the priority specified.
-     * 
-     * @param  callable $callable 
-     * @param  int $priority 
+     *
+     * @param  callable $callable
+     * @param  int $priority
      * @return View
      */
     public function addRenderingStrategy($callable, $priority = 1)
     {
-        $this->events()->attach('renderer', $callable, $priority);
+        $this->events()->attach(ViewEvent::EVENT_RENDERER, $callable, $priority);
         return $this;
     }
 
@@ -149,19 +151,19 @@ class View
      *
      * Typical usages for a response strategy are to populate the Response object.
      *
-     * Internally, the callable provided will be subscribed to the "response" 
+     * Internally, the callable provided will be subscribed to the "response"
      * event, at the priority specified.
-     * 
-     * @param  callable $callable 
-     * @param  int $priority 
+     *
+     * @param  callable $callable
+     * @param  int $priority
      * @return View
      */
     public function addResponseStrategy($callable, $priority = 1)
     {
-        $this->events()->attach('response', $callable, $priority);
+        $this->events()->attach(ViewEvent::EVENT_RESPONSE, $callable, $priority);
         return $this;
     }
-     
+
     /**
      * Render the provided model.
      *
@@ -181,7 +183,7 @@ class View
         $event   = $this->getEvent();
         $event->setModel($model);
         $events  = $this->events();
-        $results = $events->trigger('renderer', $event, function($result) {
+        $results = $events->trigger(ViewEvent::EVENT_RENDERER, $event, function($result) {
             return ($result instanceof Renderer);
         });
         $renderer = $results->last();
@@ -217,13 +219,13 @@ class View
 
         $event->setResult($rendered);
 
-        $events->trigger('response', $event);
+        $events->trigger(ViewEvent::EVENT_RESPONSE, $event);
     }
 
     /**
      * Loop through children, rendering each
-     * 
-     * @param  Model $model 
+     *
+     * @param  Model $model
      * @return void
      */
     protected function renderChildren(Model $model)
@@ -244,7 +246,7 @@ class View
 
     /**
      * Create and return ViewEvent used by render()
-     * 
+     *
      * @return ViewEvent
      */
     protected function getEvent()

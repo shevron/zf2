@@ -19,9 +19,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\XmlRpc\Client\Exception;
 
 /**
@@ -36,5 +33,5 @@ namespace Zend\XmlRpc\Client\Exception;
  */
 class FaultException
     extends \BadMethodCallException
-    implements \Zend\XmlRpc\Client\Exception
+    implements \Zend\XmlRpc\Client\Exception\ExceptionInterface
 {}

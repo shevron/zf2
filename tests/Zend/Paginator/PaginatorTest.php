@@ -19,14 +19,11 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace ZendTest\Paginator;
 
 use PHPUnit_Framework_TestCase as TestCase,
     Zend\Cache\StorageFactory as CacheFactory,
-    Zend\Cache\Storage\Adapter as CacheAdapter,
+    Zend\Cache\Storage\Adapter\AdapterInterface as CacheAdapter,
     Zend\Config,
     Zend\Paginator,
     Zend\Paginator\Adapter,

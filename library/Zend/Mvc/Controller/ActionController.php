@@ -6,6 +6,7 @@ use Zend\Di\Locator,
     Zend\EventManager\EventCollection,
     Zend\EventManager\EventDescription as Event,
     Zend\EventManager\EventManager,
+    Zend\EventManager\EventManagerAware,
     Zend\Http\PhpEnvironment\Response as HttpResponse,
     Zend\Loader\Broker,
     Zend\Loader\Pluggable,
@@ -21,7 +22,7 @@ use Zend\Di\Locator,
 /**
  * Basic action controller
  */
-abstract class ActionController implements Dispatchable, InjectApplicationEvent, LocatorAware, Pluggable
+abstract class ActionController implements Dispatchable, EventManagerAware, InjectApplicationEvent, LocatorAware, Pluggable
 {
     //use \Zend\EventManager\ProvidesEvents;
 
@@ -84,7 +85,7 @@ abstract class ActionController implements Dispatchable, InjectApplicationEvent,
           ->setResponse($response)
           ->setTarget($this);
 
-        $result = $this->events()->trigger('dispatch', $e, function($test) {
+        $result = $this->events()->trigger(MvcEvent::EVENT_DISPATCH, $e, function($test) {
             return ($test instanceof Response);
         });
 
@@ -155,7 +156,13 @@ abstract class ActionController implements Dispatchable, InjectApplicationEvent,
      */
     public function setEventManager(EventCollection $events)
     {
+        $events->setIdentifiers(array(
+            'Zend\Stdlib\Dispatchable',
+            __CLASS__,
+            get_class($this)
+        ));
         $this->events = $events;
+        $this->attachDefaultListeners();
         return $this;
     }
 
@@ -169,12 +176,7 @@ abstract class ActionController implements Dispatchable, InjectApplicationEvent,
     public function events()
     {
         if (!$this->events instanceof EventCollection) {
-            $this->setEventManager(new EventManager(array(
-                'Zend\Stdlib\Dispatchable',
-                __CLASS__,
-                get_called_class()
-            )));
-            $this->attachDefaultListeners();
+            $this->setEventManager(new EventManager());
         }
         return $this->events;
     }
@@ -282,9 +284,9 @@ abstract class ActionController implements Dispatchable, InjectApplicationEvent,
      *
      * If the plugin is a functor, call it, passing the parameters provided.
      * Otherwise, return the plugin instance.
-     * 
-     * @param  string $method 
-     * @param  array $params 
+     *
+     * @param  string $method
+     * @param  array $params
      * @return mixed
      */
     public function __call($method, array $params)
@@ -304,7 +306,7 @@ abstract class ActionController implements Dispatchable, InjectApplicationEvent,
     protected function attachDefaultListeners()
     {
         $events = $this->events();
-        $events->attach('dispatch', array($this, 'execute'));
+        $events->attach(MvcEvent::EVENT_DISPATCH, array($this, 'execute'));
     }
 
     /**

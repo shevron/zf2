@@ -19,13 +19,10 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\XmlRpc\Exception;
 
 /**
- * @uses       \Zend\XmlRpc\Exception
+ * @uses       Zend\XmlRpc\Exception\ExceptionInterface
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
@@ -34,6 +31,6 @@ namespace Zend\XmlRpc\Exception;
  */
 class ValueException
     extends \LogicException
-    implements \Zend\XmlRpc\Exception
+    implements \Zend\XmlRpc\Exception\ExceptionInterface
 {}
 

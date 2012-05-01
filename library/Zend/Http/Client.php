@@ -18,9 +18,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\Http;
 
 use Zend\Uri\Http as HttpUri,
@@ -44,14 +41,13 @@ use Zend\Uri\Http as HttpUri,
  */
 class Client implements Dispatchable
 {
-    /**#@+
+    /**
      * @const string Supported HTTP Authentication methods
      */
     const AUTH_BASIC  = 'basic';
     const AUTH_DIGEST = 'digest';  // not implemented yet
-    /**#@-*/
 
-    /**#@+
+    /**
      * @const string DIGEST Authentication
      */
     const DIGEST_REALM  = 'realm';
@@ -60,7 +56,6 @@ class Client implements Dispatchable
     const DIGEST_OPAQUE = 'opaque';
     const DIGEST_NC     = 'nc';
     const DIGEST_CNONCE = 'cnonce';
-    /**#@-*/
 
     /**
      * Default transport adapter class
@@ -335,9 +330,9 @@ class Client implements Dispatchable
                      $ha2 = md5($this->getMethod() . ':' . $this->getUri()->getPath() . ':' . md5($entityBody));
                 }
                 if (empty($digest['qop'])) {
-                    $response = md5 ($ha1 . ':' . $digest['nonce'] . ':' . $ha2);
+                    $response = md5($ha1 . ':' . $digest['nonce'] . ':' . $ha2);
                 } else {
-                    $response = md5 ($ha1 . ':' . $digest['nonce'] . ':' . $digest['nc']
+                    $response = md5($ha1 . ':' . $digest['nonce'] . ':' . $digest['nc']
                                     . ':' . $digest['cnonce'] . ':' . $digest['qoc'] . ':' . $ha2);
                 }
                 break;

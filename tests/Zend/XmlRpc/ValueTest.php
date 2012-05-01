@@ -19,12 +19,9 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace ZendTest\XmlRpc;
 use Zend\XmlRpc\Value;
-use Zend\XmlRpc\Generator;
+use Zend\XmlRpc\Generator\GeneratorInterface as Generator;
 use Zend\Crypt\Math\BigInteger;
 use Zend\Date;
 
