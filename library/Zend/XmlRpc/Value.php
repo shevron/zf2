@@ -19,9 +19,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\XmlRpc;
 
 /**
@@ -117,7 +114,7 @@ abstract class Value
     /**
      * Get XML generator instance
      *
-     * @return Zend\XmlRpc\Generator
+     * @return \Zend\XmlRpc\Generator\GeneratorInterface
      */
     public static function getGenerator()
     {
@@ -135,10 +132,10 @@ abstract class Value
     /**
      * Sets XML generator instance
      *
-     * @param  null|Generator $generator
+     * @param  null|Generator\GeneratorInterface $generator
      * @return void
      */
-    public static function setGenerator(Generator $generator = null)
+    public static function setGenerator(Generator\GeneratorInterface $generator = null)
     {
         self::$_generator = $generator;
     }

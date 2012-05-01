@@ -19,9 +19,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace ZendTest\Mail\Storage;
 
 use Zend\Mime,
@@ -164,7 +161,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
     {
         try {
             Mime\Decode::splitMessageStruct("--xxx\n", 'xxx');
-        } catch (\Zend\Mime\Exception $e) {
+        } catch (\Zend\Mime\Exception\ExceptionInterface $e) {
             return; // ok
         }
 
@@ -232,7 +229,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
         $header = '';
         try {
             Mime\Decode::splitHeaderField($header);
-        } catch (\Zend\Mime\Exception $e) {
+        } catch (\Zend\Mime\Exception\ExceptionInterface $e) {
             return; // ok
         }
 

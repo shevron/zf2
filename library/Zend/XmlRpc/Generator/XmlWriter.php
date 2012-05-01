@@ -19,9 +19,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\XmlRpc\Generator;
 
 /**
@@ -81,7 +78,7 @@ class XmlWriter extends AbstractGenerator
      * Close an previously opened XML element
      *
      * @param string $name
-     * @return void
+     * @return XmlWriter
      */
     protected function _closeElement($name)
     {

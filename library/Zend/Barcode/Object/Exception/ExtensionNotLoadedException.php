@@ -19,9 +19,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\Barcode\Object\Exception;
 
 /**
@@ -34,6 +31,6 @@ namespace Zend\Barcode\Object\Exception;
  */
 class ExtensionNotLoadedException
     extends \RuntimeException
-    implements \Zend\Barcode\Object\Exception
+    implements ExceptionInterface
 {
 }

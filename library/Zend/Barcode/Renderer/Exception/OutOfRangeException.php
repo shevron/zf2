@@ -19,12 +19,7 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\Barcode\Renderer\Exception;
-
-use Zend\Barcode\Renderer\Exception;
 
 /**
  * Exception for Zend_Barcode component.
@@ -36,6 +31,6 @@ use Zend\Barcode\Renderer\Exception;
  */
 class OutOfRangeException
     extends \OutOfRangeException
-    implements Exception
+    implements ExceptionInterface
 {
 }

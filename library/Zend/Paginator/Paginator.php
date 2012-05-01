@@ -18,9 +18,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\Paginator;
 
 use ArrayIterator,
@@ -28,7 +25,7 @@ use ArrayIterator,
     Iterator,
     IteratorAggregate,
     Traversable,
-    Zend\Cache\Storage\Adapter as CacheAdapter,
+    Zend\Cache\Storage\Adapter\AdapterInterface as CacheAdapter,
     Zend\Db\Select as DbSelect,
     Zend\Db\Table\AbstractRowset as DbAbstractRowset,
     Zend\Db\Table\Select as DbTableSelect,

@@ -155,7 +155,7 @@ class SetCookie implements MultipleHeaderDescription
      * @param bool $httponly
      * @return SetCookie
      */
-    public function __construct($name = null, $value = null, $version = null, $maxAge = null, $domain = null, $expires = null, $path = null, $secure = false, $httponly = true)
+    public function __construct($name = null, $value = null, $version = null, $maxAge = null, $domain = null, $expires = null, $path = null, $secure = false, $httponly = false)
     {
         $this->type = 'Cookie';
 
@@ -183,8 +183,16 @@ class SetCookie implements MultipleHeaderDescription
             $this->setExpires($expires);
         }
 
+        if ($path) {
+            $this->setPath($path);
+        }
+
         if ($secure) {
             $this->setSecure($secure);
+        }
+
+        if ($httponly) {
+            $this->setHttpOnly($httponly);
         }
     }
 
@@ -207,7 +215,7 @@ class SetCookie implements MultipleHeaderDescription
         }
         
         $value = $this->getValue();
-        if (strpos($value,'"')!==false) {
+        if (strpos($value, '"')!==false) {
             $value = '"'.urlencode(str_replace('"', '', $value)).'"';
         } else {
             $value = urlencode($value);

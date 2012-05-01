@@ -18,9 +18,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\Config\Processor;
 
 use Zend\Config\Config,
@@ -34,7 +31,7 @@ use Zend\Config\Config,
 /**
  * @category   Zend
  * @package    Zend_Config
- * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Translator implements Processor
@@ -108,22 +105,22 @@ class Translator implements Processor
             if ($val instanceof Config) {
                 $this->process($val);
             } else {
-                $config->$key = $this->translator->translate($val,$this->locale);
+                $config->$key = $this->translator->translate($val, $this->locale);
             }
         }
 
         return $config;
     }
 
-	/**
-	 * Process a single value
-	 *
-	 * @param $value
-	 * @return mixed
-	 */
-	public function processValue($value)
-	{
-		return $this->translator->translate($value,$this->locale);
-	}
+    /**
+     * Process a single value
+     *
+     * @param $value
+     * @return mixed
+     */
+    public function processValue($value)
+    {
+        return $this->translator->translate($value, $this->locale);
+    }
 
 }

@@ -19,9 +19,6 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\XmlRpc\Server;
 
 /**
@@ -49,14 +46,14 @@ namespace Zend\XmlRpc\Server;
 class Fault extends \Zend\XmlRpc\Fault
 {
     /**
-     * @var Exception
+     * @var \Exception
      */
     protected $_exception;
 
     /**
      * @var array Array of exception classes that may define xmlrpc faults
      */
-    protected static $_faultExceptionClasses = array('Zend\\XmlRpc\\Server\\Exception' => true);
+    protected static $_faultExceptionClasses = array('Zend\\XmlRpc\\Server\\Exception\\ExceptionInterface' => true);
 
     /**
      * @var array Array of fault observers
@@ -66,8 +63,8 @@ class Fault extends \Zend\XmlRpc\Fault
     /**
      * Constructor
      *
-     * @param  Exception $e
-     * @return Zend\XmlRpc\Server\Fault
+     * @param  \Exception $e
+     * @return Fault
      */
     public function __construct(\Exception $e)
     {
@@ -97,8 +94,8 @@ class Fault extends \Zend\XmlRpc\Fault
     /**
      * Return Zend\XmlRpc\Server\Fault instance
      *
-     * @param Exception $e
-     * @return Zend\XmlRpc\Server\Fault
+     * @param \Exception $e
+     * @return Fault
      */
     public static function getInstance(\Exception $e)
     {

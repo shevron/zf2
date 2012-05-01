@@ -19,20 +19,14 @@
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/**
- * @namespace
- */
 namespace Zend\Authentication\Adapter;
-use Zend\Authentication\Adapter as AuthenticationAdapter,
+use Zend\Authentication\Adapter\AdapterInterface as AuthenticationAdapter,
     Zend\Authentication\Result as AuthenticationResult;
 
 /**
  * A Zend_Auth Authentication Adapter allowing the use of Information Cards as an
  * authentication mechanism
  *
- * @uses       Zend\Authentication\Adapter
- * @uses       Zend\Authentication\Result
- * @uses       Zend\InfoCard\InfoCard
  * @category   Zend
  * @package    Zend_Authentication
  * @subpackage Adapter
@@ -206,13 +200,13 @@ class InfoCard implements AuthenticationAdapter
         try {
             $claims = $this->_infoCard->process($this->getXmlToken());
         } catch(\Exception $e) {
-            return new AuthenticationResult(AuthenticationResult::FAILURE , null, array('Exception Thrown',
+            return new AuthenticationResult(AuthenticationResult::FAILURE, null, array('Exception Thrown',
                                                                                 $e->getMessage(),
                                                                                 $e->getTraceAsString(),
                                                                                 serialize($e)));
         }
 
-        if(!$claims->isValid()) {
+        if (!$claims->isValid()) {
             switch($claims->getCode()) {
                 case \Zend_InfoCard_Claims::RESULT_PROCESSING_FAILURE:
                     return new AuthenticationResult(
