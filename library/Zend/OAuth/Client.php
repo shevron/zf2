@@ -20,20 +20,18 @@
 
 namespace Zend\OAuth;
 
-use Zend\Http\Request;
+use Traversable;
+use Zend\Stdlib\ArrayUtils;
+use Zend\Http\Client as HttpClient;
+use Zend\Http\Request as HttpRequest;
 
 /**
- * @uses       Zend\Http\Client
- * @uses       Zend\OAuth\OAuth
- * @uses       Zend\OAuth\Config\StandardConfig
- * @uses       Zend\OAuth\Exception
- * @uses       Zend\OAuth\Http\Utility
  * @category   Zend
  * @package    Zend_OAuth
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Client extends \Zend\Http\Client
+class Client extends HttpClient
 {
     /**
      * Flag to indicate that the client has detected the server as supporting
@@ -47,7 +45,7 @@ class Client extends \Zend\Http\Client
      * of abstraction is unnecessary and doesn't let me escape the accessors
      * and mutators anyway!
      *
-     * @var Zend\OAuth\Config
+     * @var Config\StandardConfig
      */
     protected $_config = null;
 
@@ -63,20 +61,19 @@ class Client extends \Zend\Http\Client
      * Constructor; creates a new HTTP Client instance which itself is
      * just a typical Zend_HTTP_Client subclass with some OAuth icing to
      * assist in automating OAuth parameter generation, addition and
-     * cryptographioc signing of requests.
+     * cryptographic signing of requests.
      *
-     * @param  array $oauthOptions
+     * @param  array|Traversable $oauthOptions
      * @param  string $uri
-     * @param  array|\Zend\Config\Config $config
-     * @return void
+     * @param  array|Traversable $options
      */
     public function __construct($oauthOptions, $uri = null, $config = null)
     {
         parent::__construct($uri, $config);
         $this->_config = new Config\StandardConfig;
         if ($oauthOptions !== null) {
-            if ($oauthOptions instanceof \Zend\Config\Config) {
-                $oauthOptions = $oauthOptions->toArray();
+            if ($oauthOptions instanceof Traversable) {
+                $oauthOptions = ArrayUtils::iteratorToArray($oauthOptions);
             }
             $this->_config->setOptions($oauthOptions);
         }
@@ -85,7 +82,7 @@ class Client extends \Zend\Http\Client
     /**
      * Return the current connection adapter
      *
-     * @return Zend\Http\Client\Adapter|string $adapter
+     * @return \Zend\Http\Client\Adapter\AdapterInterface|string $adapter
      */
     public function getAdapter()
     {
@@ -95,7 +92,7 @@ class Client extends \Zend\Http\Client
    /**
      * Load the connection adapter
      *
-     * @param Zend\Http\Client\Adapter $adapter
+     * @param \Zend\Http\Client\Adapter\AdapterInterface $adapter
      * @return void
      */
     public function setAdapter($adapter)
@@ -137,7 +134,7 @@ class Client extends \Zend\Http\Client
      * Prepare the request body (for POST and PUT requests)
      *
      * @return string
-     * @throws Zend\Http\Client\Exception
+     * @throws \Zend\Http\Client\Exception\RuntimeException
      */
     protected function _prepareBody()
     {
@@ -147,7 +144,7 @@ class Client extends \Zend\Http\Client
             return $this->raw_post_data;
         }
         else {
-            return parent::_prepareBody();
+            return parent::prepareBody();
         }
     }
 
@@ -187,18 +184,18 @@ class Client extends \Zend\Http\Client
      * @param  string $method
      * @return Zend\Http\Client
      */
-    public function setMethod($method = Request::METHOD_GET)
+    public function setMethod($method = HttpRequest::METHOD_GET)
     {
-        if ($method == Request::METHOD_GET) {
-            $this->setRequestMethod(Request::METHOD_GET);
-        } elseif($method == Request::METHOD_POST) {
-            $this->setRequestMethod(Request::METHOD_POST);
-        } elseif($method == Request::METHOD_PUT) {
-            $this->setRequestMethod(Request::METHOD_PUT);
-        }  elseif($method == Request::METHOD_DELETE) {
-            $this->setRequestMethod(Request::METHOD_DELETE);
-        }   elseif($method == Request::METHOD_HEAD) {
-            $this->setRequestMethod(Request::METHOD_HEAD);
+        if ($method == HttpRequest::METHOD_GET) {
+            $this->setRequestMethod(HttpRequest::METHOD_GET);
+        } elseif($method == HttpRequest::METHOD_POST) {
+            $this->setRequestMethod(HttpRequest::METHOD_POST);
+        } elseif($method == HttpRequest::METHOD_PUT) {
+            $this->setRequestMethod(HttpRequest::METHOD_PUT);
+        }  elseif($method == HttpRequest::METHOD_DELETE) {
+            $this->setRequestMethod(HttpRequest::METHOD_DELETE);
+        }   elseif($method == HttpRequest::METHOD_HEAD) {
+            $this->setRequestMethod(HttpRequest::METHOD_HEAD);
         }
         return parent::setMethod($method);
     }
@@ -211,7 +208,7 @@ class Client extends \Zend\Http\Client
      * @param  null|Zend\Http\Request $method
      * @return Zend\Http\Response
      */
-    public function send(Request $request = null)
+    public function send(HttpRequest $request = null)
     {
         $this->prepareOAuth();
         return parent::send($request);
@@ -240,7 +237,7 @@ class Client extends \Zend\Http\Client
             );
             $this->setHeaders(array('Authorization' => $oauthHeaderValue));
         } elseif ($requestScheme == OAuth::REQUEST_SCHEME_POSTBODY) {
-            if ($requestMethod == Request::METHOD_GET) {
+            if ($requestMethod == HttpRequest::METHOD_GET) {
                 throw new Exception(
                     'The client is configured to'
                     . ' pass OAuth parameters through a POST body but request method'

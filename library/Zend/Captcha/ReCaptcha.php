@@ -24,7 +24,7 @@ namespace Zend\Captcha;
 use Traversable,
     Zend\Form\Element,
     Zend\Service\ReCaptcha\ReCaptcha as ReCaptchaService,
-    Zend\View\Renderer;
+    Zend\View\Renderer\RendererInterface as Renderer;
 
 /**
  * ReCaptcha adapter
@@ -135,8 +135,7 @@ class ReCaptcha extends AbstractAdapter
     /**
      * Constructor
      *
-     * @param  array|Config $options
-     * @return void
+     * @param  array|\Traversable $options
      */
     public function __construct($options = null)
     {
@@ -211,7 +210,7 @@ class ReCaptcha extends AbstractAdapter
     /**
      * Validate captcha
      *
-     * @see    \Zend\Validator\Validator::isValid()
+     * @see    \Zend\Validator\ValidatorInterface::isValid()
      * @param  mixed $value
      * @return boolean
      */
