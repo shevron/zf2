@@ -4,7 +4,7 @@ namespace Zend\Http;
 
 use Zend\Stdlib\RequestInterface,
     Zend\Stdlib\Message,
-    Zend\Stdlib\ParametersDescription,
+    Zend\Stdlib\ParametersInterface,
     Zend\Stdlib\Parameters,
     Zend\Uri\Http as HttpUri;
 
