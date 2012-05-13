@@ -2,13 +2,13 @@
 
 namespace Zend\Http;
 
-use Zend\Stdlib\RequestDescription,
+use Zend\Stdlib\RequestInterface,
     Zend\Stdlib\Message,
     Zend\Stdlib\ParametersDescription,
     Zend\Stdlib\Parameters,
     Zend\Uri\Http as HttpUri;
 
-class Request extends Message implements RequestDescription
+class Request extends Message implements RequestInterface
 {
 
     /**#@+
