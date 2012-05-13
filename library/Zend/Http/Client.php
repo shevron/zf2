@@ -26,10 +26,10 @@ use Zend\Uri\Http as HttpUri,
     Zend\Http\CookieStore\AbstractCookieStore,
     Zend\Http\Transport\Transport as HttpTransport,
     Zend\Stdlib\Parameters,
-    Zend\Stdlib\ParametersDescription,
-    Zend\Stdlib\Dispatchable,
-    Zend\Stdlib\RequestDescription,
-    Zend\Stdlib\ResponseDescription;
+    Zend\Stdlib\ParametersInterface,
+    Zend\Stdlib\DispatchableInterface,
+    Zend\Stdlib\RequestInterface,
+    Zend\Stdlib\ResponseInterface;
 
 /**
  * Http client
@@ -39,7 +39,7 @@ use Zend\Uri\Http as HttpUri,
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Client implements Dispatchable
+class Client implements DispatchableInterface
 {
     /**
      * @const string Supported HTTP Authentication methods
@@ -343,11 +343,11 @@ class Client implements Dispatchable
     /**
      * Dispatch
      *
-     * @param RequestDescription $request
-     * @param ResponseDescription $response
+     * @param  \Zend\Stdlib\RequestInterface  $request
+     * @param  \Zend\Stdlib\ResponseInterface $response
      * @return ResponseDescription
      */
-    public function dispatch(RequestDescription $request, ResponseDescription $response = null)
+    public function dispatch(RequestInterface $request, ResponseInterface $response = null)
     {
         $response = $this->send($request);
         return $response;
@@ -481,7 +481,7 @@ class Client implements Dispatchable
         if ($content) {
             if (is_array($content)) {
                 $request->setPost(new Parameters($content));
-            } elseif ($content instanceof ParametersDescription) {
+            } elseif ($content instanceof ParametersInterface) {
                 $request->setPost($content);
             } elseif (is_string($content) || $content instanceof Entity\Entity) {
                 $request->setContent($content);
