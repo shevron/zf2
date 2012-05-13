@@ -2,7 +2,7 @@
 
 namespace Zend\Http\Entity;
 
-use Zend\Stdlib\ParametersDescription,
+use Zend\Stdlib\ParametersInterface,
     Zend\Http\Headers;
 
 class UrlEncodedFormData extends Entity implements Rewindable, FormDataHandler
@@ -44,10 +44,10 @@ class UrlEncodedFormData extends Entity implements Rewindable, FormDataHandler
     /**
      * Set the form data object
      *
-     * @param  Zend\Stdlib\ParametersDescription $formData
+     * @param  Zend\Stdlib\ParametersInterface $formData
      * @return Zend\Http\Entity\UrlEncodedFormData
      */
-    public function setFormData(ParametersDescription $formData)
+    public function setFormData(ParametersInterface $formData)
     {
         $this->formData = $formData;
         $this->iterator = $formData->getIterator();

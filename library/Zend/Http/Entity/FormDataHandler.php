@@ -2,7 +2,7 @@
 
 namespace Zend\Http\Entity;
 
-use Zend\Stdlib\ParametersDescription,
+use Zend\Stdlib\ParametersInterface,
     Zend\Http\Headers;
 
 interface FormDataHandler
@@ -10,9 +10,9 @@ interface FormDataHandler
     /**
      * Set the form data object
      *
-     * @param  Zend\Stdlib\ParametersDescription $formData
+     * @param  Zend\Stdlib\ParametersInterface $formData
      */
-    public function setFormData(ParametersDescription $formData);
+    public function setFormData(ParametersInterface $formData);
 
     /**
      * Prepare request headers

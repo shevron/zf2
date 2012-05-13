@@ -48,12 +48,12 @@ class Request extends Message implements RequestInterface
     protected $version = self::VERSION_11;
 
     /**
-     * @var \Zend\Stdlib\ParametersDescription
+     * @var \Zend\Stdlib\ParametersInterface
      */
     protected $queryParams = null;
 
     /**
-     * @var \Zend\Stdlib\ParametersDescription
+     * @var \Zend\Stdlib\ParametersInterface
      */
     protected $postParams = null;
 
@@ -239,10 +239,10 @@ class Request extends Message implements RequestInterface
      * Provide an alternate Parameter Container implementation for query parameters in this object, (this is NOT the
      * primary API for value setting, for that see query())
      *
-     * @param \Zend\Stdlib\ParametersDescription $query
+     * @param \Zend\Stdlib\ParametersInterface $query
      * @return Request
      */
-    public function setQuery(ParametersDescription $query)
+    public function setQuery(ParametersInterface $query)
     {
         $this->queryParams = $query;
         return $this;
@@ -251,7 +251,7 @@ class Request extends Message implements RequestInterface
     /**
      * Return the parameter container responsible for query parameters
      *
-     * @return \Zend\Stdlib\ParametersDescription
+     * @return \Zend\Stdlib\ParametersInterface
      */
     public function query()
     {
@@ -266,10 +266,10 @@ class Request extends Message implements RequestInterface
      * Provide an alternate Parameter Container implementation for post parameters in this object, (this is NOT the
      * primary API for value setting, for that see post())
      *
-     * @param \Zend\Stdlib\ParametersDescription $post
+     * @param \Zend\Stdlib\ParametersInterface $post
      * @return Request
      */
-    public function setPost(ParametersDescription $post)
+    public function setPost(ParametersInterface $post)
     {
         if (! $this->content) {
             $this->setContent(new Entity\UrlEncodedFormData());
@@ -286,7 +286,7 @@ class Request extends Message implements RequestInterface
     /**
      * Return the parameter container responsible for post parameters
      *
-     * @return \Zend\Stdlib\ParametersDescription
+     * @return \Zend\Stdlib\ParametersInterface
      */
     public function post()
     {

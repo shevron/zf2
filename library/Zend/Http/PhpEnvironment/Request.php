@@ -6,7 +6,7 @@ use Zend\Http\Request as HttpRequest,
     Zend\Uri\Http as HttpUri,
     Zend\Http\Header\Cookie,
     Zend\Stdlib\Parameters,
-    Zend\Stdlib\ParametersDescription;
+    Zend\Stdlib\ParametersInterface;
 
 class Request extends HttpRequest
 {
@@ -32,17 +32,17 @@ class Request extends HttpRequest
     protected $requestUri;
 
     /**
-     * @var \Zend\Stdlib\ParametersDescription
+     * @var \Zend\Stdlib\ParametersInterface
      */
     protected $fileParams = null;
 
     /**
-     * @var \Zend\Stdlib\ParametersDescription
+     * @var \Zend\Stdlib\ParametersInterface
      */
     protected $serverParams = null;
 
     /**
-     * @var \Zend\Stdlib\ParametersDescription
+     * @var \Zend\Stdlib\ParametersInterface
      */
     protected $envParams = null;
 
@@ -160,10 +160,10 @@ class Request extends HttpRequest
      * Provide an alternate Parameter Container implementation for file parameters in this object, (this is NOT the
      * primary API for value setting, for that see file())
      *
-     * @param \Zend\Stdlib\ParametersDescription $files
+     * @param \Zend\Stdlib\ParametersInterface $files
      * @return Request
      */
-    public function setFile(ParametersDescription $files)
+    public function setFile(ParametersInterface $files)
     {
         $this->fileParams = $files;
         return $this;
@@ -172,7 +172,7 @@ class Request extends HttpRequest
     /**
      * Return the parameter container responsible for file parameters
      *
-     * @return ParametersDescription
+     * @return ParametersInterface
      */
     public function file()
     {
@@ -187,7 +187,7 @@ class Request extends HttpRequest
      * Return the parameter container responsible for server parameters
      *
      * @see http://www.faqs.org/rfcs/rfc3875.html
-     * @return \Zend\Stdlib\ParametersDescription
+     * @return \Zend\Stdlib\ParametersInterface
      */
     public function server()
     {
@@ -202,10 +202,10 @@ class Request extends HttpRequest
      * Provide an alternate Parameter Container implementation for env parameters in this object, (this is NOT the
      * primary API for value setting, for that see env())
      *
-     * @param \Zend\Stdlib\ParametersDescription $env
+     * @param \Zend\Stdlib\ParametersInterface $env
      * @return \Zend\Http\Request
      */
-    public function setEnv(ParametersDescription $env)
+    public function setEnv(ParametersInterface $env)
     {
         $this->envParams = $env;
         return $this;
@@ -214,7 +214,7 @@ class Request extends HttpRequest
     /**
      * Return the parameter container responsible for env parameters
      *
-     * @return \Zend\Stdlib\ParametersDescription
+     * @return \Zend\Stdlib\ParametersInterface
      */
     public function env()
     {
@@ -229,10 +229,10 @@ class Request extends HttpRequest
      * Provide an alternate Parameter Container implementation for server parameters in this object, (this is NOT the
      * primary API for value setting, for that see server())
      *
-     * @param \Zend\Stdlib\ParametersDescription $server
+     * @param \Zend\Stdlib\ParametersInterface $server
      * @return Request
      */
-    public function setServer(ParametersDescription $server)
+    public function setServer(ParametersInterface $server)
     {
         $this->serverParams = $server;
 
