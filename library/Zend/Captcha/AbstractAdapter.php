@@ -21,23 +21,22 @@
 
 namespace Zend\Captcha;
 
-use Traversable,
-    Zend\Config\Config;
+use Traversable;
+use Zend\Stdlib\ArrayUtils;
+use Zend\Validator\AbstractValidator;
 
 /**
  * Base class for Captcha adapters
  *
  * Provides some utility functionality to build on
  *
- * @uses       Zend\Captcha\Adapter
- * @uses       Zend\Validator\AbstractValidator
  * @category   Zend
  * @package    Zend_Captcha
  * @subpackage Adapter
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-abstract class AbstractAdapter extends \Zend\Validator\AbstractValidator implements Adapter
+abstract class AbstractAdapter extends AbstractValidator implements AdapterInterface
 {
     /**
      * Element name
@@ -88,16 +87,16 @@ abstract class AbstractAdapter extends \Zend\Validator\AbstractValidator impleme
     /**
      * Constructor
      *
-     * @param  array|Zend\Config\Config $options
-     * @return void
+     * @param array|Traversable $options
      */
     public function __construct($options = null)
     {
         // Set options
+        if ($options instanceof Traversable) {
+            $options = ArrayUtils::iteratorToArray($options);
+        }
         if (is_array($options)) {
             $this->setOptions($options);
-        } else if ($options instanceof Config) {
-            $this->setConfig($options);
         }
     }
 
@@ -153,17 +152,6 @@ abstract class AbstractAdapter extends \Zend\Validator\AbstractValidator impleme
     public function getOptions()
     {
         return $this->_options;
-    }
-
-    /**
-     * Set object state from config object
-     *
-     * @param  Zend\Config\Config $config
-     * @return Zend\Captcha\AbstractAdapter
-     */
-    public function setConfig(Config $config)
-    {
-        return $this->setOptions($config->toArray());
     }
 
     /**

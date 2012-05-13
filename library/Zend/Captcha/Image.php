@@ -23,7 +23,7 @@ namespace Zend\Captcha;
 
 use Zend\Captcha\Exception,
     Zend\Loader\Pluggable,
-    Zend\View\Renderer;
+    Zend\View\Renderer\RendererInterface as Renderer;
 
 /**
  * Image-based captcha element
@@ -135,7 +135,7 @@ class Image extends Word
     /**
      * Constructor
      *
-     * @param  array|Zend\Config\Config $options
+     * @param  array|\Traversable $options
      * @return void
      */
     public function __construct($options = null)

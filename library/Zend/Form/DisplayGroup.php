@@ -27,7 +27,7 @@ use Traversable,
     Zend\Stdlib\ArrayUtils,
     Zend\Translator,
     Zend\View\Renderer\PhpRenderer,
-    Zend\View\Renderer as View;
+    Zend\View\Renderer\RendererInterface as View;
 
 /**
  * Zend_Form_DisplayGroup
@@ -120,8 +120,7 @@ class DisplayGroup implements \Iterator,\Countable
      *
      * @param  string $name
      * @param  PrefixPathMapper $loader
-     * @param  array|Config $options
-     * @return void
+     * @param  array|Traversable $options
      */
     public function __construct($name, PrefixPathMapper $loader, $options = null)
     {

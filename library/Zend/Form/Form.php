@@ -30,10 +30,10 @@ use Countable,
     Zend\Loader,
     Zend\Json\Json,
     Zend\View\Renderer\PhpRenderer,
-    Zend\View\Renderer as View,
+    Zend\View\Renderer\RendererInterface as View,
     Zend\Stdlib\ArrayUtils,
     Zend\Translator,
-    Zend\Validator\Validator;
+    Zend\Validator\ValidatorInterface;
 
 /**
  * Zend_Form
@@ -51,7 +51,7 @@ use Countable,
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Form implements Iterator, Countable, Validator
+class Form implements Iterator, Countable, ValidatorInterface
 {
     /**#@+
      * Plugin loader type constants
@@ -246,8 +246,7 @@ class Form implements Iterator, Countable, Validator
      *
      * Registers form view helper as decorator
      *
-     * @param mixed $options
-     * @return void
+     * @param  array|Traversable $options
      */
     public function __construct($options = null)
     {
@@ -1836,8 +1835,13 @@ class Form implements Iterator, Countable, Validator
         }
 
         if (!class_exists($class)) {
-            Loader::loadClass($class);
+            throw new Exception\UnexpectedValueException(
+                sprintf('%s expects a valid registry class name; received "%s", which did not resolve',
+                        __METHOD__,
+                        $class
+                ));
         }
+
         $this->_displayGroups[$name] = new $class(
             $name,
             $this->getPluginLoader(self::DECORATOR),
