@@ -29,19 +29,23 @@ class Simple extends AbstractCookieStore
      *
      * @see Zend\Http\CookieStore\AbstractCookieStore::addCookieFromHeader()
      */
-    public function addCookieFromHeader(SetCookieHeader $header)
+    public function addCookieFromHeader(SetCookieHeader $header, HttpUri $defaultUri = null)
     {
+        if (! $defaultUri) {
+            $defaultUri = new HttpUri('/');
+        }
+
         $cookieId = $this->getCookieId($header);
         $this->cookies[$cookieId] = $header;
 
-        if (! isset($this->cookieRefs[$header->getDomain()])) {
-            $this->cookieRefs[$header->getDomain()] = new ArrayObject();
+        $cookieDomain = $header->getDomain() ?: $defaultUri->getHost();
+        if (! isset($this->cookieRefs[$cookieDomain])) {
+            $this->cookieRefs[$cookieDomain] = new ArrayObject();
         }
 
-        $domain = $this->cookieRefs[$header->getDomain()]; /* @var $domain \ArrayObject */
+        $domain = $this->cookieRefs[$cookieDomain]; /* @var $domain \ArrayObject */
 
-        $path = $header->getPath();
-        if (! $path) $path = '/';
+        $path = $header->getPath() ?: $defaultUri->getPath();
 
         if (! isset($domain[$path])) {
             $domain[$path] = new ArrayObject();

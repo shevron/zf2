@@ -367,7 +367,7 @@ class Client implements DispatchableInterface
         while (true) {
             $this->prepareRequest($request);
             $response = $transport->send($request, $response);
-            $this->handleResponse($response);
+            $this->handleResponse($response, $request);
 
             // If we got redirected, look for the Location header
             if ($response->isRedirect() &&
@@ -437,11 +437,13 @@ class Client implements DispatchableInterface
      * Can perform some tasks on incoming responses, such as read and store set
      * cookies
      *
-     * @param Zend\Http\Response $response
+     * @param Zend\Http\Response $response The response to handle
+     * @param Zend\Http\Request  $request  The request that triggered the response
+     *
      */
-    protected function handleResponse(Response $response)
+    protected function handleResponse(Response $response, Request $request)
     {
-        $this->getCookieStore()->readCookiesFromResponse($response);
+        $this->getCookieStore()->readCookiesFromResponse($response, $request->uri());
     }
 
     /**

@@ -5,7 +5,8 @@ namespace Zend\Http\CookieStore;
 use Zend\Http\Header\SetCookie as SetCookieHeader,
     Zend\Http\Header\Cookie as CookieHeader,
     Zend\Http\Request,
-    Zend\Http\Response;
+    Zend\Http\Response,
+    Zend\Uri\Http as HttpUri;
 
 abstract class AbstractCookieStore implements \IteratorAggregate
 {
@@ -15,14 +16,18 @@ abstract class AbstractCookieStore implements \IteratorAggregate
      * @param  \Zend\Http\Header\SetCookie $header
      * @return \Zend\Http\CookieStore\AbstractCookieStore
      */
-    public function addCookieFromHeader(SetCookieHeader $header)
+    public function addCookieFromHeader(SetCookieHeader $header, HttpUri $defaultUri = null)
     {
+        if (! $defaultUri) {
+            $defaultUri = new HttpUri();
+        }
+
         $this->addCookie(
             $header->getName(),
             $header->getValue(),
-            $header->getDomain(),
+            $header->getDomain() ?: $defaultUri->getHost(),
             $header->getExpires(true),
-            $header->getPath(),
+            $header->getPath() ?: $defaultUri->getPath(),
             $header->isSecure(),
             $header->isHttponly()
         );
@@ -34,14 +39,15 @@ abstract class AbstractCookieStore implements \IteratorAggregate
      * Read all cookies from an HTTP response
      *
      * @param  \Zend\Http\Response $response
+     * @param  \Zend\Uri\Http      $uri      HTTP URI to get defaults from
      * @return \Zend\Http\CookieStore\AbstractCookieStore
      */
-    public function readCookiesFromResponse(Response $response)
+    public function readCookiesFromResponse(Response $response, HttpUri $uri)
     {
         $cookies = $response->headers()->get('Set-Cookie');
         if ($cookies) {
             foreach($cookies as $cookieHeader) {
-                $this->addCookieFromHeader($cookieHeader);
+                $this->addCookieFromHeader($cookieHeader, $uri);
             }
         }
 
