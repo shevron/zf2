@@ -374,22 +374,7 @@ class Client implements DispatchableInterface
                 $response->headers()->has('Location') &&
                 $this->redirectCounter < $this->options->getMaxRedirects()) {
 
-                // Avoid problems with buggy servers that add whitespace at the
-                // end of some headers
-                $location = trim($response->headers()->get('Location')->getFieldValue());
-
-                // Check whether we send the exact same request again, or drop the parameters
-                // and send a GET request
-                if ($response->getStatusCode() == 303 ||
-                   ((! $this->options->getStrictRedirects()) && ($response->getStatusCode() == 302 ||
-                       $response->getStatusCode() == 301))) {
-
-                    $request->setMethod(Request::METHOD_GET);
-                    $request->setContent(null);
-                }
-
-                $uri = HttpUri::merge($request->uri(), $location)->normalize();
-                $request->setUri($uri);
+                $request = $this->getNextRequestForRedirection($response, $request);
 
                 ++$this->redirectCounter;
 
@@ -400,6 +385,29 @@ class Client implements DispatchableInterface
         }
 
         return $response;
+    }
+
+    public function getNextRequestForRedirection(Response $response, Request $request = null)
+    {
+        // Avoid problems with buggy servers that add whitespace at the
+        // end of some headers
+        $location = trim($response->headers()->get('Location')->getFieldValue());
+
+        // Check whether we send the exact same request again, or drop the parameters
+        // and send a GET request
+        if ($response->getStatusCode() == 303 ||
+            (! $this->options->getStrictRedirects() &&
+             ($response->getStatusCode() == 302 || $response->getStatusCode() == 301))) {
+
+            $request->setMethod(Request::METHOD_GET);
+            $request->setContent(null);
+        }
+
+        $uri = HttpUri::merge($request->uri(), $location)->normalize();
+        $request->setUri($uri)
+                ->headers()->removeHeader($request->headers()->get('Host'));
+
+        return $request;
     }
 
     protected function prepareRequest(Request $request)
