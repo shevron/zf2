@@ -183,7 +183,7 @@ class Request extends HttpRequest
      *
      * @return ParametersInterface
      */
-    public function file()
+    public function getFile()
     {
         if ($this->fileParams === null) {
             $this->fileParams = new Parameters();
@@ -198,7 +198,7 @@ class Request extends HttpRequest
      * @see http://www.faqs.org/rfcs/rfc3875.html
      * @return \Zend\Stdlib\ParametersInterface
      */
-    public function server()
+    public function getServer()
     {
         if ($this->serverParams === null) {
             $this->serverParams = new Parameters();
@@ -225,7 +225,7 @@ class Request extends HttpRequest
      *
      * @return \Zend\Stdlib\ParametersInterface
      */
-    public function env()
+    public function getEnv()
     {
         if ($this->envParams === null) {
             $this->envParams = new Parameters();

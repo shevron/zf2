@@ -360,7 +360,7 @@ class Request extends Message implements RequestInterface
         $ret = parent::setContent($value);
 
         if ($value instanceof Entity\FormDataHandler) {
-            $value->setFormData($this->post());
+            $value->setFormData($this->getPost());
 
         } elseif (! $value) {
             // Reset content headers
