@@ -41,12 +41,6 @@ class ExceptionHandlerTest extends CommonPluginTest
             'getMetadata.exception'  => 'onException',
             'getMetadatas.exception' => 'onException',
 
-            'getDelayed.exception' => 'onException',
-            'find.exception'       => 'onException',
-
-            'fetch.exception'    => 'onException',
-            'fetchAll.exception' => 'onException',
-
             'setItem.exception'  => 'onException',
             'setItems.exception' => 'onException',
 
@@ -69,15 +63,9 @@ class ExceptionHandlerTest extends CommonPluginTest
 
             'decrementItem.exception'  => 'onException',
             'decrementItems.exception' => 'onException',
-
-            'clear.exception'            => 'onException',
-            'clearByNamespace.exception' => 'onException',
-
-            'optimize.exception'    => 'onException',
-            'getCapacity.exception' => 'onException',
         );
         foreach ($expectedListeners as $eventName => $expectedCallbackMethod) {
-            $listeners = $this->_adapter->events()->getListeners($eventName);
+            $listeners = $this->_adapter->getEventManager()->getListeners($eventName);
 
             // event should attached only once
             $this->assertSame(1, $listeners->count());
@@ -97,7 +85,7 @@ class ExceptionHandlerTest extends CommonPluginTest
         $this->_adapter->removePlugin($this->_plugin);
 
         // no events should be attached
-        $this->assertEquals(0, count($this->_adapter->events()->getEvents()));
+        $this->assertEquals(0, count($this->_adapter->getEventManager()->getEvents()));
     }
 
     public function testOnExceptionCallCallback()
@@ -138,5 +126,4 @@ class ExceptionHandlerTest extends CommonPluginTest
         $this->assertFalse($event->getThrowException());
         $this->assertSame('test', $event->getResult());
     }
-
 }

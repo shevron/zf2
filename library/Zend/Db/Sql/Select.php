@@ -1,24 +1,12 @@
 <?php
 /**
- * Zend Framework
+ * Zend Framework (http://framework.zend.com/)
  *
- * LICENSE
- *
- * This source file is subject to the new BSD license that is bundled
- * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://framework.zend.com/license/new-bsd
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@zend.com so we can send you a copy immediately.
- *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Sql
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ * @package   Zend_Db
  */
-
 namespace Zend\Db\Sql;
 
 use Zend\Db\Adapter\Adapter,
@@ -31,8 +19,6 @@ use Zend\Db\Adapter\Adapter,
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Sql
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
  *
  * @property Where $where
  */
@@ -44,6 +30,7 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
      */
     const SPECIFICATION_SELECT = 'select';
     const SPECIFICATION_JOIN = 'join';
+    const SPECIFICATION_JOIN_ALIAS = 'joinAlias';
     const SPECIFICATION_WHERE = 'where';
     const SPECIFICATION_GROUP = 'group';
     const SPECIFICATION_HAVING = 'having';
@@ -145,12 +132,10 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
      */
     protected $offset = null;
 
-
     /**
      * Constructor
      * 
-     * @param  null|string $table 
-     * @param  null|string $schema
+     * @param  null|string $table
      * @return void
      */
     public function __construct($table = null)
@@ -167,7 +152,7 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
     /**
      * Create from clause
      * 
-     * @param  string|TableIdentifier $table
+     * @param  string|array|TableIdentifier $table
      * @param  null|string $schema
      * @return Select
      */
@@ -177,8 +162,12 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
             throw new \InvalidArgumentException('Since this object was created with a table and/or schema in the constructor, it is read only.');
         }
 
-        if (!is_string($table) && !$table instanceof TableIdentifier) {
-            throw new Exception\InvalidArgumentException('$table must be a string or an instance of TableIdentifier');
+        if (!is_string($table) && !is_array($table) && !$table instanceof TableIdentifier) {
+            throw new Exception\InvalidArgumentException('$table must be a string, array, or an instance of TableIdentifier');
+        }
+
+        if (is_array($table)) {
+            $table = new TableIdentifier($table);
         }
 
         $this->table = $table;
@@ -212,7 +201,7 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
     /**
      * Create join clause
      * 
-     * @param  string $name 
+     * @param  string|array $name 
      * @param  string $on 
      * @param  string|array $columns 
      * @param  string $type one of the JOIN_* constants
@@ -396,11 +385,10 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
         }
 
         $sql = implode(' ', $sqls);
-        
+
         $statement->setSql($sql);
         return;
     }
-
 
     /**
      * Get SQL string for statement
@@ -427,28 +415,38 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
         return $sql;
     }
 
-
-
     protected function processSelect(PlatformInterface $platform, Adapter $adapter = null, ParameterContainer $parameterContainer = null)
     {
         $expr = 1;
-        
+
         if (!$this->table) {
             return null;
         }
+
         // create quoted table name to use in columns processing
         if ($this->table instanceof TableIdentifier) {
-            list($table, $schema) = $this->table->getTableAndSchema();
+            list($table, $schema, $alias) = $this->table->getTableAndSchema();
             $table = $platform->quoteIdentifier($table);
             if ($schema) {
                 $table = $platform->quoteIdentifier($schema) . $platform->getIdentifierSeparator() . $table;
             }
+            
+            if ($alias) {
+                $alias = $platform->quoteIdentifier($alias);
+                $table = $table . ' AS ' . $alias;
+            }
         } else {
             $table = $platform->quoteIdentifier($this->table);
         }
-        $quotedTable = ($this->prefixColumnsWithTable)
-            ? $table . $platform->getIdentifierSeparator()
-            : '';
+
+        $quotedTable = '';
+        if ($this->prefixColumnsWithTable) {
+            if (isset($alias)) {
+                $quotedTable = $alias . $platform->getIdentifierSeparator();
+            } else {
+                $quotedTable = $table . $platform->getIdentifierSeparator();
+            }
+        }
 
         // process table columns
         $columns = array();
@@ -459,7 +457,7 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
                 $columns[] = array($quotedTable . self::SQL_STAR);
                 continue;
             } 
-            
+
             if ($column instanceof Expression) {
                 $columnParts = $this->processExpression(
                     $column,
@@ -474,7 +472,7 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
             } else {
                 $columnName .= $quotedTable . $platform->quoteIdentifier($column);
             }
-            
+
             // process As portion
             if (is_string($columnIndexOrAs)) {
                 $columnAs = $platform->quoteIdentifier($columnIndexOrAs);
@@ -487,10 +485,16 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
         $separator = $platform->getIdentifierSeparator();
 
         // process join columns
-        foreach ($this->joins as $j => $join) {
+        foreach ($this->joins as $join) {
             foreach ($join['columns'] as $jKey => $jColumn) {
                 $jColumns = array();
-                $jColumns[] = $platform->quoteIdentifier($join['name']) . $separator . $platform->quoteIdentifierInFragment($jColumn);
+                if (is_array($join['name'])) {
+                    $keys = array_keys($join['name']);
+                    $name = array_pop($keys);
+                } else {
+                    $name = $join['name'];
+                }
+                $jColumns[] = $platform->quoteIdentifier($name) . $separator . $platform->quoteIdentifierInFragment($jColumn);
                 if (is_string($jKey)) {
                     $jColumns[] = $platform->quoteIdentifier($jKey);
                 } elseif ($jColumn !== self::SQL_STAR) {
@@ -502,20 +506,31 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
 
         return array($columns, $table);
     }
-    
+
     protected function processJoin(PlatformInterface $platform, Adapter $adapter = null, ParameterContainer $parameterContainer = null)
     {
         if (!$this->joins) {
             return null;
         }
-        
+
         // process joins
         $joinSpecArgArray = array();
         foreach ($this->joins as $j => $join) {
+
+            if (is_array($join['name'])) {
+                $keys = array_keys($join['name']);
+                $alias = array_pop($keys);
+                $name = $join['name'][$alias];
+
+                $nameArg = $platform->quoteIdentifier($name) . ' AS ' . $platform->quoteIdentifier($alias);
+            } else {
+                $nameArg = $platform->quoteIdentifier($join['name']);
+            }
+
             $joinSpecArgArray[$j] = array();
             $joinSpecArgArray[$j][] = strtoupper($join['type']); // type
-            $joinSpecArgArray[$j][] = $platform->quoteIdentifier($join['name']); // table
-            $joinSpecArgArray[$j][] = $platform->quoteIdentifierInFragment($join['on'], array('=', 'AND', 'OR', '(', ')')); // on
+            $joinSpecArgArray[$j][] = $nameArg; // table
+            $joinSpecArgArray[$j][] = $platform->quoteIdentifierInFragment($join['on'], array('=', 'AND', 'OR', '(', ')', 'BETWEEN')); // on
         }
 
         return array($joinSpecArgArray);
@@ -540,7 +555,7 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
         }
         // process table columns
         $groups = array();
-        foreach ($this->group as $k => $column) {
+        foreach ($this->group as $column) {
             $columnSql = '';
             if ($column instanceof Expression) {
                 $columnParts = $this->processExpression($column, $platform, ($adapter) ? $adapter->getDriver() : null, 'group');
@@ -549,7 +564,7 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
                 }
                 $columnSql .= $columnParts['sql'];
             } else {
-                $columnSql .= $platform->quoteIdentifier($column);
+                $columnSql .= $platform->quoteIdentifierInFragment($column);
             }
             $groups[] = $columnSql;
         }
@@ -584,9 +599,9 @@ class Select extends AbstractSql implements SqlInterface, PreparableSqlInterface
                 }
             }
             if (strtoupper($v) == self::ORDER_DESENDING) {
-                $orders[] = array($platform->quoteIdentifier($k), self::ORDER_DESENDING);
+                $orders[] = array($platform->quoteIdentifierInFragment($k), self::ORDER_DESENDING);
             } else {
-                $orders[] = array($platform->quoteIdentifier($k), self::ORDER_ASCENDING);
+                $orders[] = array($platform->quoteIdentifierInFragment($k), self::ORDER_ASCENDING);
             }
         }
         return array($orders);

@@ -40,7 +40,7 @@ use Zend\Pdf;
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class FitRectangle extends Explicit
+class FitRectangle extends AbstractExplicitDestination
 {
     /**
      * Create destination object
@@ -51,7 +51,7 @@ class FitRectangle extends Explicit
      * @param float $right   Right edge of displayed page
      * @param float $top     Top edge of displayed page
      * @return \Zend\Pdf\Destination\FitRectangle
-     * @throws \Zend\Pdf\Exception
+     * @throws \Zend\Pdf\Exception\ExceptionInterface
      */
     public static function create($page, $left, $bottom, $right, $top)
     {

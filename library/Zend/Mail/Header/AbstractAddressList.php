@@ -22,6 +22,7 @@
 namespace Zend\Mail\Header;
 
 use Zend\Mail\AddressList;
+use Zend\Mail\Headers;
 
 /**
  * Base class for headers composing address lists (to, from, cc, bcc, reply-to)
@@ -65,7 +66,7 @@ abstract class AbstractAddressList implements HeaderInterface
      */
     public static function fromString($headerLine)
     {
-        $headerLine = iconv_mime_decode($headerLine, ICONV_MIME_DECODE_CONTINUE_ON_ERROR);
+        $headerLine = iconv_mime_decode($headerLine, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, 'UTF-8');
 
         // split into name/value
         list($fieldName, $fieldValue) = explode(': ', $headerLine, 2);
@@ -79,7 +80,7 @@ abstract class AbstractAddressList implements HeaderInterface
         $header = new static();
 
         // split value on ","
-        $fieldValue = str_replace("\r\n ", " ", $fieldValue);
+        $fieldValue = str_replace(Headers::FOLDING, ' ', $fieldValue);
         $values     = explode(',', $fieldValue);
         array_walk($values, 'trim');
 
@@ -97,7 +98,7 @@ abstract class AbstractAddressList implements HeaderInterface
             if (empty($name)) {
                 $name = null;
             } else {
-                $name = iconv_mime_decode($name, ICONV_MIME_DECODE_CONTINUE_ON_ERROR);
+                $name = iconv_mime_decode($name, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, 'UTF-8');
             }
 
             if (isset($matches['namedEmail'])) {
@@ -145,12 +146,12 @@ abstract class AbstractAddressList implements HeaderInterface
                 }
 
                 if ('ASCII' !== $encoding) {
-                    $name = HeaderWrap::mimeEncodeValue($name, $encoding, false);
+                    $name = HeaderWrap::mimeEncodeValue($name, $encoding);
                 }
                 $emails[] = sprintf('%s <%s>', $name, $email);
             }
         }
-        $string = implode(",\r\n ", $emails);
+        $string = implode(',' . Headers::FOLDING, $emails);
         return $string;
     }
 
@@ -208,6 +209,6 @@ abstract class AbstractAddressList implements HeaderInterface
     {
         $name  = $this->getFieldName();
         $value = $this->getFieldValue();
-        return sprintf("%s: %s\r\n", $name, $value);
+        return (empty($value)) ? '' : sprintf('%s: %s', $name, $value);
     }
 }

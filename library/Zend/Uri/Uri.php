@@ -31,16 +31,23 @@ class Uri
     const CHAR_RESERVED   = ':\/\?#\[\]@!\$&\'\(\)\*\+,;=';
 
     /**
-     * Host part types
+     * Host part types represented as binary masks
+     * The binary mask consists of 5 bits in the following order:
+     * <RegName> | <DNS> | <IPvFuture> | <IPv6> | <IPv4>
+     * Place 1 or 0 in the different positions for enable or disable the part.
+     * Finally use a hexadecimal representation.
      */
-    const HOST_IPV4      = 1;
-    const HOST_IPV6      = 2;
-    const HOST_IPVF      = 4;
-    const HOST_IPVANY    = 7;
-    const HOST_DNSNAME   = 8;
-    const HOST_DNSORIPV4 = 9;
-    const HOST_REGNAME   = 16;
-    const HOST_ALL       = 31;
+    const HOST_IPV4                 = 0x01; //00001
+    const HOST_IPV6                 = 0x02; //00010
+    const HOST_IPVFUTURE            = 0x04; //00100
+    const HOST_IPVANY               = 0x07; //00111
+    const HOST_DNS                  = 0x08; //01000
+    const HOST_DNS_OR_IPV4          = 0x09; //01001
+    const HOST_DNS_OR_IPV6          = 0x0A; //01010
+    const HOST_DNS_OR_IPV4_OR_IPV6  = 0x0B; //01011
+    const HOST_DNS_OR_IPVANY        = 0x0F; //01111
+    const HOST_REGNAME              = 0x10; //10000
+    const HOST_ALL                  = 0x1F; //11111
 
     /**
      * URI scheme
@@ -123,7 +130,7 @@ class Uri
     /**
      * Create a new URI object
      *
-     * @param  \Zend\Uri\Uri|string|null $uri
+     * @param  Uri|string|null $uri
      * @throws Exception\InvalidArgumentException
      */
     public function __construct($uri = null)
@@ -164,6 +171,33 @@ class Uri
         }
 
         if ($this->userInfo || $this->port) {
+            return false;
+        }
+
+        if ($this->path) {
+            // Check path-only (no host) URI
+            if (substr($this->path, 0, 2) == '//') {
+                return false;
+            }
+            return true;
+        }
+
+        if (! ($this->query || $this->fragment)) {
+            // No host, path, query or fragment - this is not a valid URI
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if the URI is a valid relative URI
+     *
+     * @return boolean
+     */
+    public function isValidRelative()
+    {
+        if ($this->scheme || $this->host || $this->userInfo || $this->port) {
             return false;
         }
 
@@ -274,9 +308,11 @@ class Uri
     public function toString()
     {
         if (!$this->isValid()) {
-            throw new Exception\InvalidUriException(
-                'URI is not valid and cannot be converted into a string'
-            );
+            if ($this->isAbsolute() || !$this->isValidRelative()) {
+                throw new Exception\InvalidUriException(
+                    'URI is not valid and cannot be converted into a string'
+                );
+            }
         }
 
         $uri = '';
@@ -388,7 +424,7 @@ class Uri
         if (!$baseUri instanceof static) {
             throw new Exception\InvalidUriTypeException(sprintf(
                 'Provided base URL is not an instance of "%s"',
-                get_class($this)
+                get_called_class()
             ));
         }
 
@@ -616,7 +652,7 @@ class Uri
             throw new Exception\InvalidUriPartException(sprintf(
                 'Scheme "%s" is not valid or is not accepted by %s',
                 $scheme,
-                get_class($this)
+                get_called_class()
             ), Exception\InvalidUriPartException::INVALID_SCHEME);
         }
 
@@ -663,7 +699,7 @@ class Uri
             throw new Exception\InvalidUriPartException(sprintf(
                 'Host "%s" is not valid or is not accepted by %s',
                 $host,
-                get_class($this)
+                get_called_class()
             ), Exception\InvalidUriPartException::INVALID_HOSTNAME);
         }
 
@@ -805,7 +841,7 @@ class Uri
             }
         }
 
-        if ($allowed & self::HOST_DNSNAME) {
+        if ($allowed & self::HOST_DNS) {
             if (static::isValidDnsHostname($host)) {
                 return true;
             }
@@ -1075,7 +1111,7 @@ class Uri
             'allowipv6' => (bool) ($allowed & self::HOST_IPV6),
         );
 
-        if ($allowed & (self::HOST_IPV6 | self::HOST_IPVF)) {
+        if ($allowed & (self::HOST_IPV6 | self::HOST_IPVFUTURE)) {
             if (preg_match('/^\[(.+)\]$/', $host, $match)) {
                 $host = $match[1];
                 $validatorParams['allowipv4'] = false;
@@ -1089,7 +1125,7 @@ class Uri
             }
         }
 
-        if ($allowed & self::HOST_IPVF) {
+        if ($allowed & self::HOST_IPVFUTURE) {
             $regex = '/^v\.[[:xdigit:]]+[' . self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMS . ':]+$/';
             return (bool) preg_match($regex, $host);
         }

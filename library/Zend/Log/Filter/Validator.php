@@ -21,9 +21,8 @@
 
 namespace Zend\Log\Filter;
 
-use Zend\Log\Exception,
-    Zend\Log\Filter,
-    Zend\Validator\ValidatorInterface as ZendValidator;
+use Zend\Log\Exception;
+use Zend\Validator\ValidatorInterface as ZendValidator;
 
 /**
  * @category   Zend
@@ -32,7 +31,7 @@ use Zend\Log\Exception,
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Validator implements Filter
+class Validator implements FilterInterface
 {
     /**
      * Regex to match
@@ -45,15 +44,9 @@ class Validator implements Filter
      * Filter out any log messages not matching the validator
      *
      * @param  ZendValidator $validator
-     * @throws Exception\InvalidArgumentException
      */
-    public function __construct($validator)
+    public function __construct(ZendValidator $validator)
     {
-        if (!$validator instanceof ZendValidator) {
-            throw new Exception\InvalidArgumentException(sprintf(
-                'Expected Zend\Validator object'
-            ));
-        }
         $this->validator = $validator;
     }
 

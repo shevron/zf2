@@ -114,7 +114,7 @@ class HeadersTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($headers->has('foobar'));
         $this->assertTrue($headers->has('foo'));
         $this->assertTrue($headers->has('Foo'));
-        $this->assertSame($f, $headers->get('foo'));
+        $this->assertEquals('bar', $headers->get('foo')->getFieldValue());
     }
 
     public function testHeadersAggregatesHeaderObjects()
@@ -123,7 +123,7 @@ class HeadersTest extends \PHPUnit_Framework_TestCase
         $headers = new Mail\Headers();
         $headers->addHeader($fakeHeader);
         $this->assertEquals(1, $headers->count());
-        $this->assertSame($fakeHeader, $headers->get('Fake'));
+        $this->assertEquals('bar', $headers->get('Fake')->getFieldValue());
     }
 
     public function testHeadersAggregatesHeaderThroughAddHeader()
@@ -144,7 +144,7 @@ class HeadersTest extends \PHPUnit_Framework_TestCase
 
     public function testHeadersAddHeaderLineThrowsExceptionOnMissingFieldValue()
     {
-        $this->setExpectedException('Zend\Mail\Exception\InvalidArgumentException', 'without a field');
+        $this->setExpectedException('Zend\Mail\Header\Exception\InvalidArgumentException', 'Header must match with the format "name: value"');
         $headers = new Mail\Headers();
         $headers->addHeaderLine('Foo');
     }
@@ -200,7 +200,7 @@ class HeadersTest extends \PHPUnit_Framework_TestCase
         $headers->addHeaders(array('Foo' => 'bar', 'Baz' => 'baz'));
         $header = $headers->get('foo');
         $this->assertEquals(2, $headers->count());
-        $headers->removeHeader($header);
+        $headers->removeHeader($header->getFieldName());
         $this->assertEquals(1, $headers->count());
         $this->assertFalse($headers->get('foo'));
     }
@@ -315,5 +315,15 @@ class HeadersTest extends \PHPUnit_Framework_TestCase
         $loader  = $headers->getPluginClassLoader();
         $test    = $loader->load($plugin);
         $this->assertEquals($class, $test);
+    }
+
+    public function testClone() {
+        $headers = new Mail\Headers();
+        $headers->addHeader(new Header\Bcc());
+        $headers2 = clone($headers);
+        $this->assertEquals($headers, $headers2);
+        $headers2->removeHeader('Bcc');
+        $this->assertTrue($headers->has('Bcc'));
+        $this->assertFalse($headers2->has('Bcc'));
     }
 }

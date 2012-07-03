@@ -53,7 +53,7 @@ class Sender implements HeaderInterface
      */
     public static function fromString($headerLine)
     {
-        $headerLine = iconv_mime_decode($headerLine, ICONV_MIME_DECODE_CONTINUE_ON_ERROR);
+        $headerLine = iconv_mime_decode($headerLine, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, 'UTF-8');
         list($name, $value) = explode(': ', $headerLine, 2);
 
         // check to ensure proper header type for this factory
@@ -69,7 +69,7 @@ class Sender implements HeaderInterface
             if (empty($name)) {
                 $name = null;
             } else {
-                $name = iconv_mime_decode($name, ICONV_MIME_DECODE_CONTINUE_ON_ERROR);
+                $name = iconv_mime_decode($name, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, 'UTF-8');
             }
             $header->setAddress($matches['email'], $name);
         }
@@ -103,7 +103,7 @@ class Sender implements HeaderInterface
         if (!empty($name)) {
             $encoding = $this->getEncoding();
             if ('ASCII' !== $encoding) {
-                $name  = HeaderWrap::mimeEncodeValue($name, $encoding, false);
+                $name  = HeaderWrap::mimeEncodeValue($name, $encoding);
             }
             $email = sprintf('%s %s', $name, $email);
         }
@@ -154,8 +154,7 @@ class Sender implements HeaderInterface
     {
         if (is_string($emailOrAddress)) {
             $emailOrAddress = new Mail\Address($emailOrAddress, $name);
-        }
-        if (!$emailOrAddress instanceof Mail\Address\AddressInterface) {
+        } elseif (!$emailOrAddress instanceof Mail\Address\AddressInterface) {
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects a string or AddressInterface object; received "%s"',
                 __METHOD__,

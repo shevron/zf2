@@ -21,11 +21,11 @@
 
 namespace ZendTest\Log\Filter;
 
-use Zend\Log\Logger,
-    Zend\Log\Filter\Validator,
-    Zend\Validator\ValidatorChain,
-    Zend\Validator\Alnum,
-    Zend\Validator\Int;
+use Zend\Log\Logger;
+use Zend\Log\Filter\Validator;
+use Zend\Validator\ValidatorChain;
+use Zend\Validator\Alnum;
+use Zend\Validator\Int;
 
 /**
  * @category   Zend
@@ -37,12 +37,6 @@ use Zend\Log\Logger,
  */
 class ValidatorTest extends \PHPUnit_Framework_TestCase
 {
-    public function testRecognizesInvalidValidator()
-    {
-        $this->setExpectedException('Zend\Log\Exception\InvalidArgumentException', 'Expected Zend\Validator object');
-        new Validator('invalid');
-    }
-
     public function testValidatorFilter()
     {
         $filter = new Validator(new Alnum());

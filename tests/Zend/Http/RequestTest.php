@@ -46,7 +46,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     public function testRequestUsesHeadersContainerByDefault()
     {
         $request = new Request();
-        $this->assertInstanceOf('Zend\Http\Headers', $request->headers());
+        $this->assertInstanceOf('Zend\Http\Headers', $request->getHeaders());
     }
 
     public function testRequestCanSetHeaders()
@@ -56,7 +56,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
 
         $ret = $request->setHeaders($headers);
         $this->assertInstanceOf('Zend\Http\Request', $ret);
-        $this->assertSame($headers, $request->headers());
+        $this->assertSame($headers, $request->getHeaders());
     }
 
     public function testRequestCanSetAndRetrieveKnownMethod()
@@ -153,11 +153,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($request->isXmlHttpRequest());
 
         $request = new Request();
-        $request->headers()->addHeaderLine('X_REQUESTED_WITH', 'FooBazBar');
+        $request->getHeaders()->addHeaderLine('X_REQUESTED_WITH', 'FooBazBar');
         $this->assertFalse($request->isXmlHttpRequest());
 
         $request = new Request();
-        $request->headers()->addHeaderLine('X_REQUESTED_WITH', 'XMLHttpRequest');
+        $request->getHeaders()->addHeaderLine('X_REQUESTED_WITH', 'XMLHttpRequest');
         $this->assertTrue($request->isXmlHttpRequest());
     }
 
@@ -167,11 +167,11 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($request->isFlashRequest());
 
         $request = new Request();
-        $request->headers()->addHeaderLine('USER_AGENT', 'FooBazBar');
+        $request->getHeaders()->addHeaderLine('USER_AGENT', 'FooBazBar');
         $this->assertFalse($request->isFlashRequest());
 
         $request = new Request();
-        $request->headers()->addHeaderLine('USER_AGENT', 'Shockwave Flash');
+        $request->getHeaders()->addHeaderLine('USER_AGENT', 'Shockwave Flash');
         $this->assertTrue($request->isFlashRequest());
     }
 

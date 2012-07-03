@@ -21,10 +21,10 @@
 
 namespace Zend\Search\Lucene\Search\Query;
 
-use Zend\Search\Lucene,
-    Zend\Search\Lucene\Index,
-    Zend\Search\Lucene\Search\Weight,
-    Zend\Search\Lucene\Search\Highlighter\HighlighterInterface as Highlighter;
+use Zend\Search\Lucene;
+use Zend\Search\Lucene\Index;
+use Zend\Search\Lucene\Search\Weight;
+use Zend\Search\Lucene\Search\Highlighter\HighlighterInterface as Highlighter;
 
 /**
  * @category   Zend
@@ -458,7 +458,7 @@ class Boolean extends AbstractQuery
      * Constructs an appropriate Weight implementation for this query.
      *
      * @param \Zend\Search\Lucene\SearchIndexInterface $reader
-     * @return \Zend\Search\Lucene\Search\Weight\Weight
+     * @return \Zend\Search\Lucene\Search\Weight\Boolean
      */
     public function createWeight(Lucene\SearchIndexInterface $reader)
     {

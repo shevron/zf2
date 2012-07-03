@@ -21,8 +21,8 @@
 
 namespace ZendTest\Filter;
 
-use Zend\Filter\Alpha as AlphaFilter,
-    Zend\Locale\Locale;
+use Zend\Filter\Alpha as AlphaFilter;
+use Zend\Locale\Locale;
 
 /**
  * @category   Zend
@@ -51,7 +51,7 @@ class AlphaTest extends \PHPUnit_Framework_TestCase
     /**
      * Locale in browser.
      *
-     * @var Zend_Locale object
+     * @var Locale object
      */
     protected $_locale;
 
@@ -182,38 +182,6 @@ class AlphaTest extends \PHPUnit_Framework_TestCase
         }
 
         $filter = $this->_filter;
-        foreach ($valuesExpected as $input => $output) {
-            $this->assertEquals(
-                $output,
-                $result = $filter($input),
-                "Expected '$input' to filter to '$output', but received '$result' instead"
-                );
-        }
-    }
-
-    /**
-     * @group ZF-11631
-     */
-    public function testRegistryLocale()
-    {
-        $locale = new Locale('ja');
-        \Zend\Registry::set('Zend_Locale', $locale);
-
-        if (!self::$_unicodeEnabled) {
-            $this->markTestSkipped('Unicode not enabled');
-        }
-
-        $valuesExpected = array(
-                'aＡBｂc'  => 'aBc',
-                'z Ｙ　x'  => 'zx',
-                'Ｗ1v３Ｕ4t' => 'vt',
-                '，sй.rλ:qν＿p' => 'srqp',
-                'onml' => 'onml'
-        );
-
-        $filter = new AlphaFilter();
-        $this->assertEquals('ja', (string) $filter->getLocale());
-
         foreach ($valuesExpected as $input => $output) {
             $this->assertEquals(
                 $output,

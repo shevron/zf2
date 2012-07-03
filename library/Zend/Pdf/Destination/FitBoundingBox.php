@@ -40,14 +40,14 @@ use Zend\Pdf;
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class FitBoundingBox extends Explicit
+class FitBoundingBox extends AbstractExplicitDestination
 {
     /**
      * Create destination object
      *
      * @param \Zend\Pdf\Page|integer $page  Page object or page number
      * @return \Zend\Pdf\Destination\FitBoundingBox
-     * @throws \Zend\Pdf\Exception
+     * @throws \Zend\Pdf\Exception\ExceptionInterface
      */
     public static function create($page)
     {

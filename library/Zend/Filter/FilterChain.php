@@ -20,8 +20,8 @@
 
 namespace Zend\Filter;
 
-use Zend\Loader\Broker,
-    Zend\Stdlib\SplPriorityQueue;
+use Countable;
+use Zend\Stdlib\SplPriorityQueue;
 
 /**
  * @category   Zend
@@ -29,7 +29,7 @@ use Zend\Loader\Broker,
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class FilterChain extends AbstractFilter
+class FilterChain extends AbstractFilter implements Countable
 {
     /**
      * Default priority at which filters are added
@@ -37,9 +37,9 @@ class FilterChain extends AbstractFilter
     const DEFAULT_PRIORITY = 1000;
 
     /**
-     * @var Broker
+     * @var FilterPluginManager
      */
-    protected $broker;
+    protected $plugins;
 
     /**
      * Filter chain
@@ -51,7 +51,6 @@ class FilterChain extends AbstractFilter
     /**
      * Initialize filter chain
      * 
-     * @return void
      */
     public function __construct($options = null)
     {
@@ -102,39 +101,51 @@ class FilterChain extends AbstractFilter
     }
 
     /**
-     * Plugin Broker
-     *
-     * Set or retrieve the plugin broker, or retrieve a specific plugin from it.
-     *
-     * If $name is null, the broker instance is returned; it will be lazy-loaded
-     * if not already present.
-     *
-     * If $name is a Broker instance, this broker instance will replace or set 
-     * the internal broker, and the instance will be returned.
-     *
-     * If $name is a string, $name and $options will be passed to the broker's 
-     * load() method.
+     * Return the count of attached filters
      * 
-     * @param  null|Broker|string $name 
-     * @param array $options 
-     * @return Broker|FilterInterface
+     * @return int
      */
-    public function broker($name = null, $options = array())
+    public function count()
     {
-        if ($name instanceof Broker) {
-            $this->broker = $name;
-            return $this->broker;
-        } 
+        return count($this->filters);
+    }
 
-        if (null === $this->broker) {
-            $this->broker = new FilterBroker();
+    /**
+     * Get plugin manager instance
+     * 
+     * @return FilterPluginManager
+     */
+    public function getPluginManager()
+    {
+        if (!$this->plugins) {
+            $this->setPluginManager(new FilterPluginManager());
         }
+        return $this->plugins;
+    }
 
-        if (null === $name) {
-            return $this->broker;
-        }
+    /**
+     * Set plugin manager instance
+     * 
+     * @param  FilterPluginManager $plugins 
+     * @return FilterChain
+     */
+    public function setPluginManager(FilterPluginManager $plugins)
+    {
+        $this->plugins = $plugins;
+        return $this;
+    }
 
-        return $this->broker->load($name, $options);
+    /**
+     * Retrieve a filter plugin by name
+     * 
+     * @param  mixed $name 
+     * @param  array $options 
+     * @return Filter
+     */
+    public function plugin($name, array $options = array())
+    {
+        $plugins = $this->getPluginManager();
+        return $plugins->get($name, $options);
     }
 
     /**
@@ -176,12 +187,8 @@ class FilterChain extends AbstractFilter
             $options = (array) $options;
         } elseif (empty($options)) {
             $options = null;
-        } else {
-            if (range(0, count($options) - 1) != array_keys($options)) {
-                $options = array($options);
-            }
         }
-        $filter = $this->broker($name, $options);
+        $filter = $this->getPluginManager()->get($name, $options);
         return $this->attach($filter, $priority);
     }
 

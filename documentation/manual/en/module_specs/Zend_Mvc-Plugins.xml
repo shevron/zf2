@@ -6,8 +6,8 @@
   <title>Controller Plugins</title>
 
   <para>
-    When using the <classname>ActionController</classname> or
-    <classname>RestfulController</classname>, or if you compose the
+    When using the <classname>AbstractActionController</classname> or
+    <classname>AbstractRestfulController</classname>, or if you compose the
     <classname>Zend\Mvc\Controller\PluginBroker</classname> in your custom
     controllers, you have access to a number of pre-built plugins.
     Additionally, you can register your own custom plugins with the
@@ -58,8 +58,8 @@ $plugin = $this->plugin('url');
 
   <para>
     For an extra layer of convenience, both
-    <classname>ActionController</classname> and
-    <classname>RestfulController</classname> have
+    <classname>AbstractActionController</classname> and
+    <classname>AbstractRestfulController</classname> have
     <methodname>__call()</methodname> implementations that allow you to
     retrieve plugins via method calls:
   </para>
@@ -210,7 +210,7 @@ public function successAction()
 
     <para>
       For the <classname>Forward</classname> plugin to work, the controller
-      calling it must be <classname>LocatorAware</classname>; otherwise, the
+      calling it must be <classname>ServiceManagerAware</classname>; otherwise, the
       plugin will be unable to retrieve a configured and injected
       instance of the requested controller.
     </para>
@@ -223,10 +223,10 @@ public function successAction()
     <itemizedlist>
       <listitem>
         <para>
-          <varname>$name</varname>, the name of the controller to invoke.
-          This may be either the fully qualified class name, or an alias
-          defined and recognized by the Locator instance attached to the
-          invoking controller.
+          <varname>$name</varname>, the name of the controller to invoke.  This
+          may be either the fully qualified class name, or an alias defined and
+          recognized by the <classname>ServiceManager</classname> instance
+          attached to the invoking controller.
         </para>
       </listitem>
 

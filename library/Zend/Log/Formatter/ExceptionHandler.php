@@ -24,8 +24,6 @@
  */
 namespace Zend\Log\Formatter;
 
-use Zend\Log\Formatter;
-
 /**
  * @category   Zend
  * @package    Zend_Log
@@ -33,7 +31,7 @@ use Zend\Log\Formatter;
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class ExceptionHandler implements Formatter
+class ExceptionHandler implements FormatterInterface
 {
     /**
      * This method formats the event for the PHP Exception
@@ -47,13 +45,14 @@ class ExceptionHandler implements Formatter
                   $event['priority'] . ') ' . $event['message'] .' in ' .
                   $event['extra']['file'] . ' on line ' . $event['extra']['line'];
         if (!empty($event['extra']['trace'])) {
+            $outputTrace = '';
             foreach ($event['extra']['trace'] as $trace) {
-                $outputTrace = "File  : {$trace['file']}\n" .
-                               "Line  : {$trace['line']}\n" .
-                               "Func  : {$trace['function']}\n" .
-                               "Class : {$trace['class']}\n" .
-                               "Type  : " . $this->getType($trace['type']) . "\n" .
-                               "Args  : " . print_r($trace['args'], true) . "\n";           
+                $outputTrace .= "File  : {$trace['file']}\n" .
+                                "Line  : {$trace['line']}\n" .
+                                "Func  : {$trace['function']}\n" .
+                                "Class : {$trace['class']}\n" .
+                                "Type  : " . $this->getType($trace['type']) . "\n" .
+                                "Args  : " . print_r($trace['args'], true) . "\n";
             }
             $output.= "\n[Trace]\n" . $outputTrace;
         }

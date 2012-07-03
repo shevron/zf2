@@ -22,7 +22,7 @@
 namespace Zend\Locale\Data;
 
 use Zend\Cache\StorageFactory as CacheFactory,
-    Zend\Cache\Storage\Adapter\AdapterInterface as CacheAdapter,
+    Zend\Cache\Storage\StorageInterface as CacheStorage,
     Zend\Locale\Locale,
     Zend\Locale\Exception;
 
@@ -139,7 +139,7 @@ class Cldr extends AbstractLocale
         if (empty(self::$_ldml[(string) $locale])) {
             $filename = self::getPath() . '/' . $locale . '.xml';
             if (!file_exists($filename)) {
-                throw new InvalidArgumentException(
+                throw new Exception\InvalidArgumentException(
                   "Missing locale file '$filename'"
                 );
             }
@@ -848,11 +848,7 @@ class Cldr extends AbstractLocale
         }
 
         if (isset(self::$_cache)) {
-          if (self::$_cacheTags) {
-                self::$_cache->setItem($id, $temp, array('tags' => array('Zend_Locale')));
-          } else {
-                self::$_cache->setItem($id, $temp);
-          }
+            self::$_cache->setItem($id, $temp);
         }
 
         return $temp;
@@ -1341,7 +1337,7 @@ class Cldr extends AbstractLocale
 
             default :
                 throw new Exception\InvalidArgumentException(
-                  "Unknown detail ($path) for parsing locale data."
+                    "Unknown detail ($path) for parsing locale data."
                 );
                 break;
         }
@@ -1350,11 +1346,7 @@ class Cldr extends AbstractLocale
             $temp = current($temp);
         }
 
-        if (self::$_cacheTags) {
-            self::$_cache->setItem($id, $temp, array('tags' => array('Zend_Locale')));
-      } else {
-            self::$_cache->setItem($id, $temp);
-      }
+        self::$_cache->setItem($id, $temp);
 
         return $temp;
     }
@@ -1362,7 +1354,7 @@ class Cldr extends AbstractLocale
     /**
      * Internal function for checking the locale
      *
-     * @param string|\Zend\Locale $locale Locale to check
+     * @param string|Locale $locale Locale to check
      * @return string
      */
     protected static function _checkLocale($locale)
@@ -1464,8 +1456,6 @@ class Cldr extends AbstractLocale
                 ),
             )
         )));
-
-        self::_getTagSupportForCache();
     }
 
     /**
@@ -1593,9 +1583,7 @@ class Cldr extends AbstractLocale
         self::readCldrFile($filePath, $locale, $keyPath, $keyAttrib, $valuePath, $valueAttrib);
         ksort(self::$_result);
 
-        if (self::hasCacheTagSupport()) {
-            self::getCache()->setItem($cacheId, self::$_result, array('tags' => array('Zend_Locale')));
-        } elseif (self::hasCache()) {
+        if (self::hasCache()) {
             self::getCache()->setItem($cacheId, self::$_result);
         }
 

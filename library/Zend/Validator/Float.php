@@ -19,8 +19,10 @@
  */
 
 namespace Zend\Validator;
-use Zend;
+
+use Traversable;
 use Zend\Locale;
+use Zend\Stdlib\ArrayUtils;
 
 /**
  * @category   Zend
@@ -36,9 +38,9 @@ class Float extends AbstractValidator
     /**
      * @var array
      */
-    protected $_messageTemplates = array(
+    protected $messageTemplates = array(
         self::INVALID   => "Invalid type given. String, integer or float expected",
-        self::NOT_FLOAT => "'%value%' does not appear to be a float",
+        self::NOT_FLOAT => "The input does not appear to be a float",
     );
 
     /**
@@ -53,11 +55,14 @@ class Float extends AbstractValidator
     /**
      * Constructor
      *
-     * @param array $options
-     * @return \Zend\Validator\Float
+     * @param array|Traversable $options
      */
     public function __construct($options = null)
     {
+        if ($options instanceof Traversable) {
+            $options = ArrayUtils::iteratorToArray($options);
+        }
+
         if (!is_array($options)) {
             $options = array('locale' => $options);
         }
@@ -68,7 +73,7 @@ class Float extends AbstractValidator
     /**
      * Returns the set locale
      *
-     * @return \Zend\Locale
+     * @return \Zend\Locale\Locale
      */
     public function getLocale()
     {
@@ -79,6 +84,7 @@ class Float extends AbstractValidator
      * Sets the locale to use
      *
      * @param string|\Zend\Locale\Locale $locale
+     * @return Float
      */
     public function setLocale($locale = null)
     {
@@ -109,7 +115,7 @@ class Float extends AbstractValidator
                 $this->error(self::NOT_FLOAT);
                 return false;
             }
-        } catch (Locale\Exception $e) {
+        } catch (Locale\Exception\ExceptionInterface $e) {
             $this->error(self::NOT_FLOAT);
             return false;
         }

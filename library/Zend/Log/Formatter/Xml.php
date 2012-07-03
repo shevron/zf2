@@ -23,9 +23,8 @@ namespace Zend\Log\Formatter;
 
 use Traversable;
 use Zend\Stdlib\ArrayUtils;
-use DOMDocument,
-    DOMElement,
-    Zend\Log\Formatter;
+use DOMDocument;
+use DOMElement;
 
 /**
  * @category   Zend
@@ -34,7 +33,7 @@ use DOMDocument,
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Xml implements Formatter
+class Xml implements FormatterInterface
 {
     /**
      * @var string Name of root element

@@ -200,11 +200,24 @@ class Request extends Message implements RequestInterface
     }
 
     /**
-     * Return the URI for this request object as an instance of Zend\Uri\Http
+     * Return the URI for this request object as a string
+     *
+     * @return string
+     */
+    public function getUriString()
+    {
+        if ($this->uri instanceof HttpUri) {
+            return $this->uri->toString();
+        }
+        return $this->uri;
+    }
+
+    /**
+     * Return the URI for this request object
      *
      * @return HttpUri
      */
-    public function uri()
+    public function getUri()
     {
         return $this->uri;
     }
@@ -253,7 +266,7 @@ class Request extends Message implements RequestInterface
      *
      * @return \Zend\Stdlib\ParametersInterface
      */
-    public function query()
+    public function getQuery()
     {
         if ($this->queryParams === null) {
             $this->queryParams = new Parameters();
@@ -288,7 +301,7 @@ class Request extends Message implements RequestInterface
      *
      * @return \Zend\Stdlib\ParametersInterface
      */
-    public function post()
+    public function getPost()
     {
         if ($this->postParams === null) {
             $this->setPost(new Parameters());
@@ -303,9 +316,9 @@ class Request extends Message implements RequestInterface
      * @convenience $request->headers()->get('Cookie');
      * @return Header\Cookie
      */
-    public function cookie()
+    public function getCookie()
     {
-        return $this->headers()->get('Cookie');
+        return $this->getHeaders()->get('Cookie');
     }
 
     /**
@@ -326,7 +339,7 @@ class Request extends Message implements RequestInterface
      *
      * @return \Zend\Http\Headers
      */
-    public function headers()
+    public function getHeaders()
     {
         if ($this->headers === null || is_string($this->headers)) {
             // this is only here for fromString lazy loading
@@ -452,7 +465,7 @@ class Request extends Message implements RequestInterface
      */
     public function isXmlHttpRequest()
     {
-        $header = $this->headers()->get('X_REQUESTED_WITH');
+        $header = $this->getHeaders()->get('X_REQUESTED_WITH');
         return false !== $header && $header->getFieldValue() == 'XMLHttpRequest';
     }
 
@@ -463,7 +476,7 @@ class Request extends Message implements RequestInterface
      */
     public function isFlashRequest()
     {
-        $header = $this->headers()->get('USER_AGENT');
+        $header = $this->getHeaders()->get('USER_AGENT');
         return false !== $header && stristr($header->getFieldValue(), ' flash');
 
     }

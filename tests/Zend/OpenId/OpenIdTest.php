@@ -407,7 +407,7 @@ class OpenIdTest extends \PHPUnit_Framework_TestCase
         OpenId::redirect("http://www.test.com/", null, $response, 'GET');
         $this->assertSame( 302, $response->getStatusCode() );
 
-        $headers = $response->headers();
+        $headers = $response->getHeaders();
         $this->assertTrue(1 <= count($headers));
         $this->assertTrue($headers->has('Location'));
         $location = $headers->get('Location');
@@ -416,27 +416,27 @@ class OpenIdTest extends \PHPUnit_Framework_TestCase
 
         $response = new ResponseHelper(true);
         OpenId::redirect("http://www.test.com/test.php?a=b", null, $response, 'GET');
-        $location = $response->headers()->get('Location');
+        $location = $response->getHeaders()->get('Location');
         $this->assertSame( 'http://www.test.com/test.php?a=b', $location->getFieldValue() );
 
         $response = new ResponseHelper(true);
         OpenId::redirect("http://www.test.com/test.php", array('a'=>'b'), $response, 'GET');
-        $location = $response->headers()->get('Location');
+        $location = $response->getHeaders()->get('Location');
         $this->assertSame( 'http://www.test.com/test.php?a=b', $location->getFieldValue() );
 
         $response = new ResponseHelper(true);
         OpenId::redirect("http://www.test.com/test.php", array('a'=>'b', 'c'=>'d'), $response, 'GET');
-        $location = $response->headers()->get('Location');
+        $location = $response->getHeaders()->get('Location');
         $this->assertSame( 'http://www.test.com/test.php?a=b&c=d', $location->getFieldValue() );
 
         $response = new ResponseHelper(true);
         OpenId::redirect("http://www.test.com/test.php?a=b", array('c'=>'d'), $response, 'GET');
-        $location = $response->headers()->get('Location');
+        $location = $response->getHeaders()->get('Location');
         $this->assertSame( 'http://www.test.com/test.php?a=b&c=d', $location->getFieldValue() );
 
         $response = new ResponseHelper(true);
         OpenId::redirect("http://www.test.com/test.php", array('a'=>'x y'), $response, 'GET');
-        $location = $response->headers()->get('Location');
+        $location = $response->getHeaders()->get('Location');
         $this->assertSame( 'http://www.test.com/test.php?a=x+y', $location->getFieldValue() );
 
         $response = new ResponseHelper(false);
@@ -602,7 +602,7 @@ class OpenIdTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue( strlen($dh_details['priv_key']) > 0 );
             $this->assertTrue( is_string($dh_details['pub_key']) );
             $this->assertTrue( strlen($dh_details['pub_key']) > 0 );
-        } catch (\Zend\OpenId\Exception $e) {
+        } catch (\Zend\OpenId\Exception\ExceptionInterface $e) {
             $this->markTestSkipped($e->getMessage());
         }
     }
@@ -632,7 +632,7 @@ class OpenIdTest extends \PHPUnit_Framework_TestCase
                 bin2hex(OpenId::computeDhSecret($alice_details['pub_key'], $bob)) );
             $this->assertSame( '75',
                 bin2hex(OpenId::computeDhSecret($bob_details['pub_key'], $alice)) );
-        } catch (\Zend\OpenId\Exception $e) {
+        } catch (\Zend\OpenId\Exception\ExceptionInterface $e) {
             $this->markTestSkipped($e->getMessage());
         }
     }

@@ -251,10 +251,10 @@ return array(
             <programlisting language="php"><![CDATA[
 namespace Foo\Controller;
 
-use Zend\Mvc\Controller\ActionController,
+use Zend\Mvc\Controller\AbstractActionController,
     Zend\View\Model\ViewModel;
 
-class BarController extends ActionController
+class BarController extends AbstractActionController
 {
     public function doSomethingAction()
     {
@@ -316,9 +316,9 @@ class BarController extends ActionController
             <programlisting language="php"><![CDATA[
 namespace Foo\Controller;
 
-use Zend\Mvc\Controller\ActionController;
+use Zend\Mvc\Controller\AbstractActionController;
 
-class BarController extends ActionController
+class BarController extends AbstractActionController
 {
     public function doSomethingCrazyAction()
     {
@@ -352,10 +352,10 @@ class BarController extends ActionController
             <programlisting language="php"><![CDATA[
 namespace Content\Controller;
 
-use Zend\Mvc\Controller\ActionController,
+use Zend\Mvc\Controller\AbstractActionController,
     Zend\View\Model\ViewModel;
 
-class ArticleController extends ActionController
+class ArticleController extends AbstractActionController
 {
     public function viewAction()
     {
@@ -568,10 +568,10 @@ return array(
             <programlisting language="php"><![CDATA[
 namespace Foo\Controller;
 
-use Zend\Mvc\Controller\ActionController,
+use Zend\Mvc\Controller\AbstractActionController,
     Zend\View\Model\ViewModel;
 
-class BarController extends ActionController
+class BarController extends AbstractActionController
 {
     public function doSomethingAction()
     {
@@ -601,10 +601,10 @@ class BarController extends ActionController
             <programlisting language="php"><![CDATA[
 namespace Foo\Controller;
 
-use Zend\Mvc\Controller\ActionController,
+use Zend\Mvc\Controller\AbstractActionController,
     Zend\View\Model\ViewModel;
 
-class BarController extends ActionController
+class BarController extends AbstractActionController
 {
     public function doSomethingAction()
     {
@@ -635,10 +635,10 @@ class BarController extends ActionController
             <programlisting language="php"><![CDATA[
 namespace Content\Controller;
 
-use Zend\Mvc\Controller\ActionController,
+use Zend\Mvc\Controller\AbstractActionController,
     Zend\View\Model\ViewModel;
 
-class ArticleController extends ActionController
+class ArticleController extends AbstractActionController
 {
     public function viewAction()
     {
@@ -667,10 +667,10 @@ class ArticleController extends ActionController
             <programlisting language="php"><![CDATA[
 namespace Content\Controller;
 
-use Zend\Mvc\Controller\ActionController,
+use Zend\Mvc\Controller\AbstractActionController,
     Zend\View\Model\ViewModel;
 
-class ArticleController extends ActionController
+class ArticleController extends AbstractActionController
 {
     public function viewAction()
     {
@@ -741,22 +741,13 @@ $this->layout()->footer = $this->render('article/footer');
             <programlisting language="php"><![CDATA[
 namespace Content;
 
-use Zend\EventManager\StaticEventManager;
-
 class Module
 {
-    public function init($manager)
-    {
-        // Register a bootstrap event
-        $events = StaticEventManager::getInstance();
-        $events->attach('bootstrap', 'bootstrap', array($this, 'bootstrap'));
-    }
-
-    public function bootstrap($e)
+    public function onBootstrap($e)
     {
         // Register a dispatch event
         $app = $e->getParam('application');
-        $app->events()->attach('dispatch', array($this, 'setLayout'), -100);
+        $app->getEventManager()->attach('dispatch', array($this, 'setLayout'), -100);
     }
 
     public function setLayout($e)
@@ -770,7 +761,7 @@ class Module
 
         // Set the layout template
         $viewModel = $e->getViewModel();
-        $viewModel->setLayout('content/layout');
+        $viewModel->setTemplate('content/layout');
     }
 }
 ]]></programlisting>
@@ -856,34 +847,25 @@ class Module
             <programlisting language="php"><![CDATA[
 namespace Application;
 
-use Zend\EventManager\StaticEventManager;
-
 class Module
 {
-    public function init($manager)
-    {
-        // Register a bootstrap event
-        $events = StaticEventManager::getInstance();
-        $events->attach('bootstrap', 'bootstrap', array($this, 'bootstrap'));
-    }
-
-    public function bootstrap($e)
+    public function onBootstrap($e)
     {
         // Register a "render" event, at high priority (so it executes prior
         // to the view attempting to render)
         $app = $e->getParam('application');
-        $app->events()->attach('render', array($this, 'registerJsonStrategy'), 100);
+        $app->getEventManager()->attach('render', array($this, 'registerJsonStrategy'), 100);
     }
 
     public function registerJsonStrategy($e)
     {
         $app          = $e->getTarget();
-        $locator      = $app->getLocator();
+        $locator      = $app->getServiceManager();
         $view         = $locator->get('Zend\View\View');
         $jsonStrategy = $locator->get('Zend\View\Strategy\JsonStrategy');
 
         // Attach strategy, which is a listener aggregate, at high priority
-        $view->events()->attach($jsonStrategy, 100);
+        $view->getEventManager()->attach($jsonStrategy, 100);
     }
 }
 
@@ -907,22 +889,13 @@ class Module
             <programlisting language="php"><![CDATA[
 namespace Content;
 
-use Zend\EventManager\StaticEventManager;
-
 class Module
 {
-    public function init($manager)
-    {
-        // Register a bootstrap event
-        $events = StaticEventManager::getInstance();
-        $events->attach('bootstrap', 'bootstrap', array($this, 'bootstrap'));
-    }
-
-    public function bootstrap($e)
+    public function onBootstrap($e)
     {
         // Register a render event
         $app = $e->getParam('application');
-        $app->events()->attach('render', array($this, 'registerJsonStrategy'), 100);
+        $app->getEventManager()->attach('render', array($this, 'registerJsonStrategy'), 100);
     }
 
     public function registerJsonStrategy($e)
@@ -940,12 +913,12 @@ class Module
 
         // Set the JSON strategy when controllers from this module are selected
         $app          = $e->getTarget();
-        $locator      = $app->getLocator();
+        $locator      = $app->getServiceManager();
         $view         = $locator->get('Zend\View\View');
         $jsonStrategy = $locator->get('Zend\View\Strategy\JsonStrategy');
 
         // Attach strategy, which is a listener aggregate, at high priority
-        $view->events()->attach($jsonStrategy, 100);
+        $view->getEventManager()->attach($jsonStrategy, 100);
     }
 }
 ]]></programlisting>

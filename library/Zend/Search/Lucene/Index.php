@@ -20,12 +20,12 @@
 
 namespace Zend\Search\Lucene;
 
-use Zend\Search\Lucene\Search\Similarity,
-	Zend\Search\Lucene\Storage\Directory,
-	Zend\Search\Lucene\Exception\InvalidArgumentException,
-	Zend\Search\Lucene\Exception\RuntimeException,
-	Zend\Search\Lucene\Exception\InvalidFileFormatException,
-    Zend\Search\Lucene\Exception\OutOfRangeException;
+use Zend\Search\Lucene\Search\Similarity\AbstractSimilarity;
+use Zend\Search\Lucene\Storage\Directory;
+use Zend\Search\Lucene\Exception\InvalidArgumentException;
+use Zend\Search\Lucene\Exception\RuntimeException;
+use Zend\Search\Lucene\Exception\InvalidFileFormatException;
+use Zend\Search\Lucene\Exception\OutOfRangeException;
 
 /**
  * @category   Zend
@@ -59,7 +59,7 @@ class Index implements SearchIndexInterface
     /**
      * Array of Zend_Search_Lucene_Index_SegmentInfo objects for current version of index.
      *
-     * @var array \Zend\Search\Lucene\Index\SegmentInfo
+     * @var array|\Zend\Search\Lucene\Index\SegmentInfo
      */
     private $_segmentInfos = array();
 
@@ -660,7 +660,7 @@ class Index implements SearchIndexInterface
      * Input is a string or Zend_Search_Lucene_Search_Query.
      *
      * @param \Zend\Search\Lucene\Search\QueryParser|string $query
-     * @return array \Zend\Search\Lucene\Search\QueryHit
+     * @return array|\Zend\Search\Lucene\Search\QueryHit
      * @throws \Zend\Search\Lucene\Exception\InvalidArgumentException
      * @throws \Zend\Search\Lucene\Exception\RuntimeException
      */
@@ -668,9 +668,7 @@ class Index implements SearchIndexInterface
     {
         if (is_string($query)) {
             $query = Search\QueryParser::parse($query);
-        }
-
-        if (!$query instanceof Search\Query\AbstractQuery) {
+        } elseif (!$query instanceof Search\Query\AbstractQuery) {
             throw new InvalidArgumentException('Query must be a string or Zend\Search\Lucene\Search\Query object');
         }
 
@@ -685,13 +683,13 @@ class Index implements SearchIndexInterface
         $query->execute($this);
 
         $topScore = 0;
-
+        
         $resultSetLimit = Lucene::getResultSetLimit();
         foreach ($query->matchedDocs() as $id => $num) {
             $docScore = $query->score($id, $this);
             if( $docScore != 0 ) {
                 $hit = new Search\QueryHit($this);
-                $hit->id = $id;
+                $hit->document_id = $hit->id = $id;
                 $hit->score = $docScore;
 
                 $hits[]   = $hit;
@@ -842,7 +840,7 @@ class Index implements SearchIndexInterface
     public function getDocument($id)
     {
         if ($id instanceof Search\QueryHit) {
-            /* @var $id Zend\Search\Lucene\Search\QueryHit */
+            /* @var $id \Zend\Search\Lucene\Search\QueryHit */
             $id = $id->id;
         }
 
@@ -1049,11 +1047,11 @@ class Index implements SearchIndexInterface
     /**
      * Retrive similarity used by index reader
      *
-     * @return \Zend\Search\Lucene\Search\Similarity
+     * @return \Zend\Search\Lucene\Search\Similarity\AbstractSimilarity
      */
     public function getSimilarity()
     {
-        return Similarity::getDefault();
+        return AbstractSimilarity::getDefault();
     }
 
 
@@ -1113,7 +1111,7 @@ class Index implements SearchIndexInterface
     public function delete($id)
     {
         if ($id instanceof Search\QueryHit) {
-            /* @var $id Zend\Search\Lucene\Search\QueryHit */
+            /* @var $id \Zend\Search\Lucene\Search\QueryHit */
             $id = $id->id;
         }
 

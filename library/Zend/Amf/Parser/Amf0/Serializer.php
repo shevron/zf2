@@ -21,10 +21,10 @@
 
 namespace Zend\Amf\Parser\Amf0;
 
+use DateTime;
 use Zend\Amf\Parser\AbstractSerializer,
     Zend\Amf\Parser,
-    Zend\Amf,
-    Zend\Date;
+    Zend\Amf;
 
 /**
  * Serializer PHP misc types back to there corresponding AMF0 Type Marker.
@@ -57,8 +57,8 @@ class Serializer extends AbstractSerializer
      * @param  mixed $data
      * @param  mixed $markerType
      * @param  mixed $dataByVal
-     * @return Zend\Amf\Parser\Amf0\Serializer
-     * @throws Zend\Amf\Exception for unrecognized types or data
+     * @return Serializer
+     * @throws Amf\Exception\ExceptionInterface for unrecognized types or data
      */
     public function writeTypeMarker(&$data, $markerType = null, $dataByVal = false)
     {
@@ -111,7 +111,7 @@ class Serializer extends AbstractSerializer
                         $this->writeAmf3TypeMarker($data);
                         break;
                     default:
-                        throw new Amf\Exception("Unknown Type Marker: " . $markerType);
+                        throw new Amf\Exception\InvalidArgumentException("Unknown Type Marker: " . $markerType);
                 }
             }
         } else {
@@ -132,7 +132,7 @@ class Serializer extends AbstractSerializer
                     $markerType = Amf\Constants::AMF0_STRING;
                     break;
                 case (is_object($data)):
-                    if (($data instanceof \DateTime) || ($data instanceof Date\Date)) {
+                    if ($data instanceof DateTime) {
                         $markerType = Amf\Constants::AMF0_DATE;
                     } else {
 
@@ -172,7 +172,7 @@ class Serializer extends AbstractSerializer
                     }
                     break;
                 default:
-                    throw new Amf\Exception('Unsupported data type: ' . gettype($data));
+                    throw new Amf\Exception\InvalidArgumentException('Unsupported data type: ' . gettype($data));
             }
 
             $this->writeTypeMarker($data, $markerType);
@@ -219,7 +219,7 @@ class Serializer extends AbstractSerializer
      * Write a PHP array with string or mixed keys.
      *
      * @param object $data
-     * @return Zend\Amf\Parser\Amf0\Serializer
+     * @return Serializer
      */
     public function writeObject($object)
     {
@@ -242,7 +242,7 @@ class Serializer extends AbstractSerializer
      * is encountered call writeTypeMarker with mixed array.
      *
      * @param array $array
-     * @return Zend\Amf\Parser\Amf0\Serializer
+     * @return Serializer
      */
     public function writeArray(&$array)
     {
@@ -264,22 +264,14 @@ class Serializer extends AbstractSerializer
     /**
      * Convert the DateTime into an AMF Date
      *
-     * @param  DateTime|\Zend\Date\Date $data
-     * @return Zend\Amf\Parser\Amf0\Serializer
+     * @param  DateTime $date
+     * @return Serializer
+     * @throws Amf\Exception\InvalidArgumentException
      */
-    public function writeDate($data)
+    public function writeDate(DateTime $date)
     {
-        if ($data instanceof \DateTime) {
-            $dateString = $data->format('U');
-        } elseif ($data instanceof Date\Date) {
-            $dateString = $data->toString('U');
-        } else {
-            throw new Amf\Exception('Invalid date specified; must be a DateTime or Zend_Date object');
-        }
-        $dateString *= 1000;
-
         // Make the conversion and remove milliseconds.
-        $this->_stream->writeDouble($dateString);
+        $this->_stream->writeDouble($date->getTimestamp());
 
         // Flash does not respect timezone but requires it.
         $this->_stream->writeInt(0);
@@ -291,7 +283,7 @@ class Serializer extends AbstractSerializer
      * Write a class mapped object to the output stream.
      *
      * @param  object $data
-     * @return Zend\Amf\Parser\Amf0\Serializer
+     * @return Serializer
      */
     public function writeTypedObject($data)
     {
@@ -305,7 +297,7 @@ class Serializer extends AbstractSerializer
      * encountered it will not return to AMf0.
      *
      * @param  string $data
-     * @return Zend\Amf\Parser\Amf0\Serializer
+     * @return Serializer
      */
     public function writeAmf3TypeMarker(&$data)
     {

@@ -53,17 +53,16 @@ class Alpha extends AbstractValidator
      *
      * @var array
      */
-    protected $_messageTemplates = array(
+    protected $messageTemplates = array(
         self::INVALID      => "Invalid type given. String expected",
-        self::NOT_ALPHA    => "'%value%' contains non alphabetic characters",
-        self::STRING_EMPTY => "'%value%' is an empty string"
+        self::NOT_ALPHA    => "The input contains non alphabetic characters",
+        self::STRING_EMPTY => "The input is an empty string"
     );
 
     /**
      * Sets default option values for this instance
      *
-     * @param  boolean|\Traversable $allowWhiteSpace
-     * @return void
+     * @param  boolean|array $allowWhiteSpace
      */
     public function __construct($allowWhiteSpace = false)
     {

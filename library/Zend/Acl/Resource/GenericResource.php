@@ -35,17 +35,16 @@ class GenericResource implements ResourceInterface
      *
      * @var string
      */
-    protected $_resourceId;
+    protected $resourceId;
 
     /**
      * Sets the Resource identifier
      *
      * @param  string $resourceId
-     * @return void
      */
     public function __construct($resourceId)
     {
-        $this->_resourceId = (string) $resourceId;
+        $this->resourceId = (string) $resourceId;
     }
 
     /**
@@ -55,7 +54,7 @@ class GenericResource implements ResourceInterface
      */
     public function getResourceId()
     {
-        return $this->_resourceId;
+        return $this->resourceId;
     }
 
     /**

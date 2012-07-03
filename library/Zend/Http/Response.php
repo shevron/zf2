@@ -257,7 +257,7 @@ class Response extends Message implements ResponseInterface
      *
      * @return Headers
      */
-    public function headers()
+    public function getHeaders()
     {
         if ($this->headers === null || is_string($this->headers)) {
             $this->headers = (is_string($this->headers)) ? Headers::fromString($this->headers) : new Headers();
@@ -268,9 +268,9 @@ class Response extends Message implements ResponseInterface
     /**
      * @return Header\SetCookie[]
      */
-    public function cookie()
+    public function getCookie()
     {
-        return $this->headers()->get('Set-Cookie');
+        return $this->getHeaders()->get('Set-Cookie');
     }
 
     /**
@@ -327,8 +327,9 @@ class Response extends Message implements ResponseInterface
     /**
      * Set HTTP status code and (optionally) message
      *
-     * @param numeric $code
-     * @return Response
+     * @param integer $code
+     * @throws Exception\InvalidArgumentException
+     * @return \Zend\Http\Response
      */
     public function setStatusCode($code)
     {
@@ -448,7 +449,7 @@ class Response extends Message implements ResponseInterface
     public function toString()
     {
         $str  = $this->renderStatusLine() . "\r\n";
-        $str .= $this->headers()->toString();
+        $str .= $this->getHeaders()->toString();
         $str .= "\r\n";
         $str .= $this->getBody();
         return $str;

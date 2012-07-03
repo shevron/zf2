@@ -94,8 +94,11 @@ class ClassReflectionTest extends \PHPUnit_Framework_TestCase
         $reflectionClass = new ClassReflection('ZendTest\Code\Reflection\TestAsset\TestSampleClass2');
         $target = <<<EOS
 {
-
     protected \$_prop1 = null;
+
+    /**
+     * @Sample({"foo":"bar"})
+     */
     protected \$_prop2 = null;
 
     public function getProp1()
@@ -121,11 +124,9 @@ EOS;
 
     public function testStartLine()
     {
-        $this->markTestIncomplete('Line numbers not complete yet');
-
         $reflectionClass = new ClassReflection('ZendTest\Code\Reflection\TestAsset\TestSampleClass5');
 
-        $this->assertEquals(16, $reflectionClass->getStartLine());
+        $this->assertEquals(18, $reflectionClass->getStartLine());
         $this->assertEquals(5, $reflectionClass->getStartLine(true));
     }
 

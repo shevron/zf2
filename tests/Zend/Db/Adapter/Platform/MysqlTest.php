@@ -55,6 +55,16 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers Zend\Db\Adapter\Platform\Mysql::quoteIdentifierChain
+     */
+    public function testQuoteIdentifierChain()
+    {
+        $this->assertEquals('`identifier`', $this->platform->quoteIdentifierChain('identifier'));
+        $this->assertEquals('`identifier`', $this->platform->quoteIdentifierChain(array('identifier')));
+        $this->assertEquals('`schema`.`identifier`', $this->platform->quoteIdentifierChain(array('schema','identifier')));
+    }
+
+    /**
      * @covers Zend\Db\Adapter\Platform\Mysql::getQuoteValueSymbol
      */
     public function testGetQuoteValueSymbol()
@@ -68,6 +78,16 @@ class MysqlTest extends \PHPUnit_Framework_TestCase
     public function testQuoteValue()
     {
         $this->assertEquals("'value'", $this->platform->quoteValue('value'));
+    }
+
+    /**
+     * @covers Zend\Db\Adapter\Platform\Mysql::quoteValueList
+     */
+    public function testQuoteValueList()
+    {
+        $this->assertEquals("'Foo O\\'Bar'", $this->platform->quoteValueList("Foo O'Bar"));
+        $this->assertEquals("'Foo O\\'Bar'", $this->platform->quoteValueList(array("Foo O'Bar")));
+        $this->assertEquals("'value', 'Foo O\\'Bar'", $this->platform->quoteValueList(array('value',"Foo O'Bar")));
     }
 
     /**

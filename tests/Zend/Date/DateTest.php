@@ -26,8 +26,8 @@ use Zend\Cache\StorageFactory as CacheFactory,
     Zend\Date\Date,
     Zend\Date\Cities,
     Zend\Locale\Locale,
-    Zend\TimeSync\TimeSync,
-    Zend\Registry;
+    Zend\Locale\Exception\ExceptionInterface as LocaleException,
+    Zend\TimeSync\TimeSync;
 
 /**
  * These const values control some testing behavior.
@@ -79,7 +79,6 @@ class DateTest extends \PHPUnit_Framework_TestCase
     public function tearDown()
     {
         Date::setOptions($this->_orig);
-        $this->_cache->clear(CacheAdapter::MATCH_ALL);
         date_default_timezone_set($this->_originaltimezone);
     }
 
@@ -91,7 +90,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         // look if locale is detectable
         try {
             $locale = new Locale();
-        } catch (\Zend\Locale\Exception $e) {
+        } catch (LocaleException $e) {
             $this->markTestSkipped('Autodetection of locale failed');
             return;
         }
@@ -108,7 +107,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         // look if locale is detectable
         try {
             $locale = new Locale();
-        } catch (\Zend\Locale\Exception $e) {
+        } catch (LocaleException $e) {
             $this->markTestSkipped('Autodetection of locale failed');
             return;
         }
@@ -130,7 +129,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         // look if locale is detectable
         try {
             $locale = new Locale();
-        } catch (\Zend\Locale\Exception $e) {
+        } catch (LocaleException $e) {
             $this->markTestSkipped('Autodetection of locale failed');
             return;
         }
@@ -168,7 +167,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         // look if locale is detectable
         try {
             $locale = new Locale();
-        } catch (\Zend\Locale\Exception $e) {
+        } catch (LocaleException $e) {
             $this->markTestSkipped('Autodetection of locale failed');
             return;
         }
@@ -185,7 +184,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         // look if locale is detectable
         try {
             $locale = new Locale();
-        } catch (\Zend\Locale\Exception $e) {
+        } catch (LocaleException $e) {
             $this->markTestSkipped('Autodetection of locale failed');
             return;
         }
@@ -225,7 +224,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         // look if locale is detectable
         try {
             $locale = new Locale();
-        } catch (\Zend\Locale\Exception $e) {
+        } catch (LocaleException $e) {
             $this->markTestSkipped('Autodetection of locale failed');
             return;
         }
@@ -290,7 +289,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
             $date = new Date(0,null,$locale);
             $result = $date->setTimestamp('notimestamp');
             $this->Fail("exception expected");
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
     }
@@ -311,7 +310,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $result = $date->addTimestamp(array('notimestamp' => 1000));
             $this->fail("exception expected");
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
     }
@@ -326,7 +325,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
             $date = new Date(0,null,$locale);
             $result = $date->addTimestamp('notimestamp');
             $this->fail("exception expected");
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
     }
@@ -352,7 +351,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
             $date = new Date(0,null,$locale);
             $result = $date->subTimestamp('notimestamp');
             $this->fail("exception expected");
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
     }
@@ -876,7 +875,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DAY);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -929,7 +928,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::WEEKDAY_SHORT);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::WEEKDAY_SHORT);
@@ -959,7 +958,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('xxx', Date::DAY_SHORT);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DAY_SHORT);
@@ -991,7 +990,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::WEEKDAY);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::WEEKDAY);
@@ -1021,13 +1020,13 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set(0, Date::WEEKDAY_8601);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         try {
             $date->set('noday', Date::WEEKDAY_8601);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::WEEKDAY_8601);
@@ -1057,7 +1056,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set($d2, Date::DAY_SUFFIX);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -1065,13 +1064,13 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set(7, Date::WEEKDAY_DIGIT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         try {
             $date->set('noday', Date::WEEKDAY_DIGIT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::WEEKDAY_DIGIT);
@@ -1101,7 +1100,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DAY_OF_YEAR);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DAY_OF_YEAR);
@@ -1133,7 +1132,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::WEEKDAY_NARROW);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::WEEKDAY_NARROW);
@@ -1163,7 +1162,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::WEEKDAY_NAME);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::WEEKDAY_NAME);
@@ -1193,7 +1192,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::WEEK);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::WEEK);
@@ -1225,7 +1224,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::MONTH_NAME);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::MONTH_NAME);
@@ -1255,7 +1254,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::MONTH);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::MONTH);
@@ -1287,7 +1286,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::MONTH_NAME_SHORT);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::MONTH_NAME_SHORT);
@@ -1317,7 +1316,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::MONTH_SHORT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::MONTH_SHORT);
@@ -1349,7 +1348,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set($d2, Date::MONTH_DAYS);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -1357,7 +1356,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('xxday', Date::MONTH_NAME_NARROW);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::MONTH_NAME_NARROW);
@@ -1387,7 +1386,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set($d2, Date::LEAPYEAR);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -1395,7 +1394,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::YEAR_8601);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::YEAR_8601);
@@ -1427,7 +1426,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::YEAR);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::YEAR);
@@ -1459,7 +1458,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::YEAR_SHORT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::YEAR_SHORT);
@@ -1491,7 +1490,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::YEAR_SHORT_8601);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::YEAR_SHORT_8601);
@@ -1523,7 +1522,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::MERIDIEM);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -1531,7 +1530,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::SWATCH);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::SWATCH);
@@ -1563,7 +1562,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::HOUR_SHORT_AM);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::HOUR_SHORT_AM);
@@ -1595,7 +1594,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::HOUR_SHORT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::HOUR_SHORT);
@@ -1627,7 +1626,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::HOUR_AM);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::HOUR_AM);
@@ -1659,7 +1658,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::HOUR);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::HOUR);
@@ -1691,7 +1690,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::MINUTE);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::MINUTE);
@@ -1723,7 +1722,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::MINUTE_SHORT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::MINUTE_SHORT);
@@ -1755,7 +1754,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::SECOND);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::SECOND);
@@ -1787,7 +1786,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::SECOND_SHORT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::SECOND_SHORT);
@@ -1819,7 +1818,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::MILLISECOND);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::MILLISECOND);
@@ -1847,7 +1846,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::TIMEZONE_NAME);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -1855,7 +1854,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DAYLIGHT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -1863,7 +1862,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::GMT_DIFF);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -1871,7 +1870,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::GMT_DIFF_SEP);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -1879,7 +1878,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::TIMEZONE);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -1887,7 +1886,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::TIMEZONE_SECS);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -1895,7 +1894,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::ISO_8601);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::ISO_8601);
@@ -1979,7 +1978,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::RFC_2822);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::RFC_2822);
@@ -2024,7 +2023,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('Thu, 05 Fxx 2009 01:31:30 +0500', Date::RFC_2822);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2032,7 +2031,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::TIMESTAMP);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::TIMESTAMP);
@@ -2045,7 +2044,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::ERA);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2053,7 +2052,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::ERA_NAME);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2061,7 +2060,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DATES);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DATES);
@@ -2074,7 +2073,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DATE_FULL);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DATE_FULL);
@@ -2087,7 +2086,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DATE_LONG);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DATE_LONG);
@@ -2100,7 +2099,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DATE_MEDIUM);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DATE_MEDIUM);
@@ -2113,7 +2112,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DATE_SHORT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DATE_SHORT);
@@ -2126,7 +2125,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::TIMES);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::TIMES);
@@ -2139,7 +2138,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::TIME_FULL);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::TIME_FULL);
@@ -2152,7 +2151,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::TIME_LONG);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::TIME_LONG);
@@ -2166,7 +2165,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::TIME_MEDIUM);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::TIME_MEDIUM);
@@ -2179,7 +2178,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::TIME_SHORT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::TIME_SHORT);
@@ -2192,7 +2191,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DATETIME);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DATETIME);
@@ -2205,7 +2204,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DATETIME_FULL);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DATETIME_FULL);
@@ -2218,7 +2217,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DATETIME_LONG);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DATETIME_LONG);
@@ -2231,7 +2230,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DATETIME_MEDIUM);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DATETIME_MEDIUM);
@@ -2244,7 +2243,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::DATETIME_SHORT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::DATETIME_SHORT);
@@ -2257,7 +2256,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::ATOM);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::ATOM);
@@ -2270,7 +2269,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::COOKIE);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::COOKIE);
@@ -2283,7 +2282,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::RFC_822);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::RFC_822);
@@ -2296,7 +2295,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::RFC_850);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::RFC_850);
@@ -2309,7 +2308,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::RFC_1036);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::RFC_1036);
@@ -2322,7 +2321,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::RFC_1123);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::RFC_1123);
@@ -2335,7 +2334,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::RFC_3339);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::RFC_3339);
@@ -2348,7 +2347,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::RSS);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::RSS);
@@ -2367,7 +2366,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', Date::W3C);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set($d2, Date::W3C);
@@ -2383,13 +2382,13 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set('noday', 'xx');
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         try {
             $date->set($d2, 'xx');
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $date->set(1234567890);
@@ -2440,7 +2439,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add($d2, Date::DAY_SUFFIX);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
     }
@@ -2508,7 +2507,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add($d2, Date::MONTH_DAYS);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2520,7 +2519,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add($d2, Date::LEAPYEAR);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2552,7 +2551,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add('noday', Date::MERIDIEM);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2620,7 +2619,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add('noday', Date::TIMEZONE_NAME);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2628,7 +2627,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add('noday', Date::DAYLIGHT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2636,7 +2635,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add('noday', Date::GMT_DIFF);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2644,7 +2643,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add('noday', Date::GMT_DIFF_SEP);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2652,7 +2651,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add('noday', Date::TIMEZONE);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2660,7 +2659,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add('noday', Date::TIMEZONE_SECS);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2680,7 +2679,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add('noday', Date::ERA);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2688,7 +2687,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add('noday', Date::ERA_NAME);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2851,7 +2850,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub($d2, Date::DAY_SUFFIX);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2903,7 +2902,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub($d2, Date::MONTH_DAYS);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2915,7 +2914,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub($d2, Date::LEAPYEAR);
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -2947,7 +2946,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub('noday', Date::MERIDIEM);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3015,7 +3014,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub('noday', Date::TIMEZONE_NAME);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3023,7 +3022,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub('noday', Date::DAYLIGHT);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3031,7 +3030,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub('noday', Date::GMT_DIFF);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3039,7 +3038,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub('noday', Date::GMT_DIFF_SEP);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3047,7 +3046,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub('noday', Date::TIMEZONE);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3055,7 +3054,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub('noday', Date::TIMEZONE_SECS);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3078,7 +3077,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub('noday', Date::ERA);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3086,7 +3085,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub('noday', Date::ERA_NAME);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3854,7 +3853,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $result = $date->getSunrise($result);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3863,7 +3862,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $result = $date->getSunrise($result);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3872,7 +3871,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $result = $date->getSunrise($result);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3881,7 +3880,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $result = $date->getSunrise($result);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3890,7 +3889,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $result = $date->getSunrise($result);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3899,7 +3898,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $result = $date->getSunrise($result);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -3930,7 +3929,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
             $result = $date->setTimezone('unknown');
             // if function timezone_identifiers_list is not available false should be returned
             $this->assertFalse($result);
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         $result = $date->getTimezone();
@@ -3963,7 +3962,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $result = Date::checkLeapYear('noyear');
             $this->fail('exception expected');
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // succeed
         }
     }
@@ -4104,7 +4103,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->setYear('noyear');
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
     }
@@ -4268,7 +4267,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->setMonth('nomonth');
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
     }
@@ -4520,7 +4519,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->setLocale('xx_XX');
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
     }
@@ -4535,7 +4534,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->set(null, Date::YEAR);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -4545,7 +4544,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->add(null, Date::YEAR);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -4555,7 +4554,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->sub(null, Date::YEAR);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
@@ -4565,392 +4564,392 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             $date->compare(null, Date::YEAR);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->equals(null, Date::YEAR);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->isEarlier(null, Date::YEAR);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->isLater(null, Date::YEAR);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setTime(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addTime(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subTime(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareTime(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setDate(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addDate(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subDate(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareDate(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setIso(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addIso(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subIso(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareIso(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setArpa(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addArpa(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subArpa(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareArpa(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setYear(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addYear(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subYear(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareYear(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setMonth(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addMonth(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subMonth(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareMonth(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setDay(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addDay(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subDay(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareDay(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setWeekday(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addWeekday(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subWeekday(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareWeekday(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setDayOfYear(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addDayOfYear(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subDayOfYear(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareDayOfYear(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setHour(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addHour(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subHour(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareHour(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setMinute(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addMinute(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subMinute(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareMinute(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setSecond(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addSecond(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subSecond(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareSecond(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->setWeek(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->addWeek(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->subWeek(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             $date->compareWeek(null);
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
     }
@@ -4970,7 +4969,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
             } else {
                 $this->assertEquals($date1->getTimestamp(), $date2->getTimestamp());
             }
-        } catch (\ZendTimeSync\Exception $e) {
+        } catch (\Zend\TimeSync\Exception $e) {
             $this->markTestIncomplete('NTP timeserver not available.');
         }
     }
@@ -5209,32 +5208,32 @@ class DateTest extends \PHPUnit_Framework_TestCase
         try {
             Date::setOptions(array('format_type' => 'non'));
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             Date::setOptions(array('unknown' => 'non'));
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
         try {
             Date::setOptions(array('fix_dst' => 2));
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         try {
             Date::setOptions(array('fix_dst' => 2));
             $this->fail();
-        } catch (\Zend\Date\Exception $e) {
+        } catch (\Zend\Date\Exception\ExceptionInterface $e) {
             // success
         }
 
         $cache = CacheFactory::adapterFactory('memory', array('memory_limit' => 0));
-        Date\Date::setOptions(array('cache' => $cache));
+        Date::setOptions(array('cache' => $cache));
     }
 
     public function testIsDate()
@@ -5326,8 +5325,6 @@ class DateTest extends \PHPUnit_Framework_TestCase
     public function testZF3677()
     {
         $locale = new Locale('de_AT');
-        Registry::set('Zend_Locale', $locale);
-
         $date   = new Date('13',null,$locale);
         $this->assertSame($date->getLocale(), $locale->toString());
     }

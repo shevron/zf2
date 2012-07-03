@@ -1,22 +1,11 @@
 <?php
 /**
- * Zend Framework
+ * Zend Framework (http://framework.zend.com/)
  *
- * LICENSE
- *
- * This source file is subject to the new BSD license that is bundled
- * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://framework.zend.com/license/new-bsd
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@zend.com so we can send you a copy immediately.
- *
- * @category   Zend
- * @package    Zend_Db
- * @subpackage Sql
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ * @package   Zend_Db
  */
 
 namespace Zend\Db\Sql;
@@ -31,10 +20,8 @@ use Zend\Db\Adapter\Adapter,
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Sql
- * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Insert implements SqlInterface, PreparableSqlInterface
+class Insert extends AbstractSql implements SqlInterface, PreparableSqlInterface
 {
     /**#@+
      * Constants
@@ -135,6 +122,15 @@ class Insert implements SqlInterface, PreparableSqlInterface
         return $this;
     }
 
+    public function getRawState($key = null)
+    {
+        $rawState = array(
+            'table' => $this->table,
+            'columns' => $this->columns,
+            'values' => $this->values
+        );
+        return (isset($key) && array_key_exists($key, $rawState)) ? $rawState[$key] : $rawState;
+    }
 
     /**
      * Prepare statement
@@ -161,8 +157,16 @@ class Insert implements SqlInterface, PreparableSqlInterface
 
         foreach ($this->columns as $cIndex => $column) {
             $columns[$cIndex] = $platform->quoteIdentifier($column);
-            $values[$cIndex] = $driver->formatParameterName($column);
-            $parameterContainer->offsetSet($column, $this->values[$cIndex]);
+            if ($this->values[$cIndex] instanceof Expression) {
+                $exprData = $this->processExpression($this->values[$cIndex], $platform, $driver);
+                $values[$cIndex] = $exprData['sql'];
+                if (count($exprData['parameters']) > 0) {
+                    $parameterContainer->merge($exprData['parameters']);
+                }
+            } else {
+                $values[$cIndex] = $driver->formatParameterName($column);
+                $parameterContainer->offsetSet($column, $this->values[$cIndex]);
+            }
         }
 
         $sql = sprintf(
@@ -186,14 +190,19 @@ class Insert implements SqlInterface, PreparableSqlInterface
         $adapterPlatform = ($adapterPlatform) ?: new Sql92;
         $table = $adapterPlatform->quoteIdentifier($this->table);
 
-//        if ($this->schema != '') {
-//            $table = $platform->quoteIdentifier($this->schema) . $platform->getIdentifierSeparator() . $table;
-//        }
-
         $columns = array_map(array($adapterPlatform, 'quoteIdentifier'), $this->columns);
         $columns = implode(', ', $columns);
 
-        $values = array_map(array($adapterPlatform, 'quoteValue'), $this->values);
+        $values = array();
+        foreach ($this->values as $value) {
+            if ($value instanceof Expression) {
+                $exprData = $this->processExpression($value, $adapterPlatform);
+                $values[] = $exprData['sql'];
+            } else {
+                $values[] = $adapterPlatform->quoteValue($value);
+            }
+        }
+
         $values = implode(', ', $values);
 
         return sprintf($this->specifications[self::SPECIFICATION_INSERT], $table, $columns, $values);

@@ -21,12 +21,12 @@
 
 namespace Zend\Search\Lucene\Search\Query\Preprocessing;
 
-use Zend\Search\Lucene,
-    Zend\Search\Lucene\Index,
-    Zend\Search\Lucene\Search\Query,
-    Zend\Search\Lucene\Analysis\Analyzer\AnalyzerInterface,
-    Zend\Search\Lucene\Search\Highlighter\HighlighterInterface as Highlighter,
-    Zend\Search\Lucene\Analysis\Analyzer\Analyzer;
+use Zend\Search\Lucene;
+use Zend\Search\Lucene\Index;
+use Zend\Search\Lucene\Search\Query;
+use Zend\Search\Lucene\Analysis\Analyzer\AnalyzerInterface;
+use Zend\Search\Lucene\Search\Highlighter\HighlighterInterface as Highlighter;
+use Zend\Search\Lucene\Analysis\Analyzer\Analyzer;
 
 /**
  * It's an internal abstract class intended to finalize ase a query processing after query parsing.
@@ -170,7 +170,7 @@ class Phrase extends AbstractPreprocessing
 
 
         // tokenize phrase using current analyzer and process it as a phrase query
-        $tokens = Analyzer\Analyzer::getDefault()->tokenize($this->_phrase, $this->_phraseEncoding);
+        $tokens = Analyzer::getDefault()->tokenize($this->_phrase, $this->_phraseEncoding);
 
         if (count($tokens) == 0) {
             $this->_matches = array();

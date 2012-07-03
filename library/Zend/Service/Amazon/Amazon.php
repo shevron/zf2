@@ -20,10 +20,10 @@
  */
 
 namespace Zend\Service\Amazon;
-use Zend\Service,
-    Zend\Service\Amazon\Exception,
-    Zend\Rest\Client,
-    Zend\Crypt;
+use Zend\Service;
+use Zend\Service\Amazon\Exception;
+use Zend\Rest\Client;
+use Zend\Crypt\Hmac;
 
 /**
  * @category   Zend
@@ -239,7 +239,7 @@ class Amazon
     {
         $signature = self::buildRawSignature($baseUri, $options);
         return base64_encode(
-            Crypt\Hmac::compute($secretKey, 'sha256', $signature, Crypt\Hmac::BINARY)
+            Hmac::compute($secretKey, 'sha256', $signature, Hmac::OUTPUT_BINARY)
         );
     }
 

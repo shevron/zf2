@@ -40,7 +40,7 @@ use Zend\Pdf;
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zoom extends Explicit
+class Zoom extends AbstractExplicitDestination
 {
     /**
      * Create destination object
@@ -50,7 +50,7 @@ class Zoom extends Explicit
      * @param float $top   Top edge of displayed page
      * @param float $zoom  Zoom factor
      * @return \Zend\Pdf\Destination\Zoom
-     * @throws \Zend\Pdf\Exception
+     * @throws \Zend\Pdf\Exception\ExceptionInterface
      */
     public static function create($page, $left = null, $top = null, $zoom = null)
     {

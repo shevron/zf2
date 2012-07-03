@@ -94,6 +94,11 @@ class StringTrim extends AbstractFilter
      */
     public function filter($value)
     {
+        // Do not filter non-string values
+        if (!is_string($value)) {
+            return $value;
+        }
+
         if (null === $this->_charList) {
             return $this->_unicodeTrim((string) $value);
         }
@@ -118,6 +123,6 @@ class StringTrim extends AbstractFilter
         );
 
         $pattern = '^[' . $chars . ']*|[' . $chars . ']*$';
-        return preg_replace("/$pattern/usSD", '', $value);
+        return preg_replace("/$pattern/sSD", '', $value);
     }
 }

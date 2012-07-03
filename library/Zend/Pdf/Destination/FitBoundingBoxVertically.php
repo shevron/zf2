@@ -39,7 +39,7 @@ use Zend\Pdf;
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class FitBoundingBoxVertically extends Explicit
+class FitBoundingBoxVertically extends AbstractExplicitDestination
 {
     /**
      * Create destination object
@@ -47,7 +47,7 @@ class FitBoundingBoxVertically extends Explicit
      * @param \Zend\Pdf\Page|integer $page  Page object or page number
      * @param float $left  Left edge of displayed page
      * @return \Zend\Pdf\Destination\FitBoundingBoxVertically
-     * @throws \Zend\Pdf\Exception
+     * @throws \Zend\Pdf\Exception\ExceptionInterface
      */
     public static function create($page, $left)
     {

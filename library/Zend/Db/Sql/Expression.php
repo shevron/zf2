@@ -1,4 +1,12 @@
 <?php
+/**
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ * @package   Zend_Db
+ */
 
 namespace Zend\Db\Sql;
 
@@ -117,7 +125,8 @@ class Expression implements ExpressionInterface
                 ? $this->types[$i] : self::TYPE_VALUE;
         }
 
-        $expression = $this->expression;
+        // assign locally, escaping % signs
+        $expression = str_replace('%', '%%', $this->expression);
 
         if (count($parameters) > 0) {
             $count = 0;

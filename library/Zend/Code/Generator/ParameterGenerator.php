@@ -65,7 +65,7 @@ class ParameterGenerator extends AbstractGenerator
     /**
      * fromReflection()
      *
-     * @param ReflectionParameter $reflectionParameter
+     * @param ParameterReflection $reflectionParameter
      * @return ParameterGenerator
      */
     public static function fromReflection(ParameterReflection $reflectionParameter)
@@ -77,7 +77,7 @@ class ParameterGenerator extends AbstractGenerator
             $param->setType('array');
         } else {
             $typeClass = $reflectionParameter->getClass();
-            if($typeClass !== null) {
+            if ($typeClass !== null) {
                 $param->setType($typeClass->getName());
             }
         }
@@ -92,7 +92,8 @@ class ParameterGenerator extends AbstractGenerator
         return $param;
     }
 
-    public function __construct($name = null, $type = null, $defaultValue = null, $position = null, $passByReference = false)
+    public function __construct($name = null, $type = null, $defaultValue = null, $position = null,
+                                $passByReference = false)
     {
         if ($name !== null) {
             $this->setName($name);
@@ -158,36 +159,18 @@ class ParameterGenerator extends AbstractGenerator
     /**
      * Set the default value of the parameter.
      *
-     * Certain variables are difficult to expres
+     * Certain variables are difficult to express
      *
-     * @param null|bool|string|int|float|ValueGenerator $defaultValue
+     * @param null|bool|string|int|float|array|ValueGenerator $defaultValue
      * @return ParameterGenerator
      */
     public function setDefaultValue($defaultValue)
     {
-        if (!$defaultValue instanceof ValueGenerator) {
-            $this->defaultValue = new ValueGenerator($defaultValue);
-        } else {
-            $this->defaultValue = $defaultValue;
+        if (!($defaultValue instanceof ValueGenerator)) {
+            $defaultValue = new ValueGenerator($defaultValue);
         }
-        /*
-        if ($defaultValue === null) {
-            $this->defaultValue = new ValueGenerator();
-        } elseif (is_string($defaultValue)) {
-            $this->defaultValue = new ValueGenerator($defaultValue);
-        } elseif (is_array($defaultValue)) {
-            $defaultValue = str_replace(array("\r", "\n"), "", var_export($defaultValue, true));
-            $this->defaultValue = new ValueGenerator($defaultValue);
-        } elseif (is_bool($defaultValue)) {
-            if($defaultValue == true) {
-                $this->defaultValue = new ValueGenerator('true');
-            } else {
-                $this->defaultValue = new ValueGenerator('false');
-            }
-        } else {
-            $this->defaultValue = $defaultValue;
-        }
-        */
+        $this->defaultValue = $defaultValue;
+
         return $this;
     }
 
@@ -254,7 +237,7 @@ class ParameterGenerator extends AbstractGenerator
             $output .= $this->type . ' ';
         }
 
-        if($this->passedByReference === true) {
+        if ($this->passedByReference === true) {
             $output .= '&';
         }
 
@@ -264,9 +247,9 @@ class ParameterGenerator extends AbstractGenerator
             $output .= ' = ';
             if (is_string($this->defaultValue)) {
                 $output .= ValueGenerator::escape($this->defaultValue);
-            } else if($this->defaultValue instanceof ValueGenerator) {
+            } elseif ($this->defaultValue instanceof ValueGenerator) {
                 $this->defaultValue->setOutputMode(ValueGenerator::OUTPUT_SINGLE_LINE);
-                $output .= (string) $this->defaultValue;
+                $output .= $this->defaultValue;
             } else {
                 $output .= $this->defaultValue;
             }

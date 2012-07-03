@@ -21,6 +21,8 @@
 
 namespace Zend\XmlRpc\Client\Exception;
 
+use Zend\XmlRpc\Exception;
+
 /**
  * Thrown by Zend_XmlRpc_Client when an XML-RPC fault response is returned.
  *
@@ -30,7 +32,6 @@ namespace Zend\XmlRpc\Client\Exception;
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class FaultException
-    extends \BadMethodCallException
-    implements \Zend\XmlRpc\Client\Exception\ExceptionInterface
-{}
+class FaultException extends Exception\BadMethodCallException implements ExceptionInterface
+{
+}

@@ -2,7 +2,8 @@
 
 namespace Zend\XmlRpc\Server\Exception;
 
-class RuntimeException
-    extends \RuntimeException
-    implements \Zend\XmlRpc\Server\Exception\ExceptionInterface
-{}
+use Zend\XmlRpc\Exception;
+
+class RuntimeException extends Exception\RuntimeException implements ExceptionInterface
+{
+}
