@@ -2,7 +2,9 @@
 
 namespace Zend\Http\Transport;
 
-class Options extends \Zend\Stdlib\Options implements \IteratorAggregate
+use Zend\Stdlib\AbstractOptions;
+
+class Options extends AbstractOptions implements \IteratorAggregate
 {
     /**
      * Whether to use keep-alive if server allows it

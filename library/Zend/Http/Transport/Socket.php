@@ -161,12 +161,13 @@ class Socket implements Transport
      */
     public function send(Request $request, Response $response = null)
     {
-        $this->log("Sending {$request->getMethod()} request to {$request->uri()}", Logger::NOTICE);
+        $this->log("Sending {$request->getMethod()} request to {$request->getUri()}", Logger::NOTICE);
 
-        if (! ($request->uri()->isAbsolute() && $request->uri()->isValid())) {
+        $uri = $request->getUri();
+        if (! ($uri->isAbsolute() && $uri->isValid())) {
             throw new Exception\InvalidArgumentException("Provided request must have a valid, absolute HTTP URI");
         }
-        $request->uri()->normalize();
+        $uri->normalize();
 
         // Connect to remote server
         $this->connect($request);
@@ -178,8 +179,8 @@ class Socket implements Transport
         $response = $this->readResponse($response);
 
         if (! $this->options->getKeepAlive() ||
-           ($response->headers()->has('connection') &&
-            $response->headers()->get('connection')->getFieldValue() == 'close')) {
+           ($response->getHeaders()->has('connection') &&
+            $response->getHeaders()->get('connection')->getFieldValue() == 'close')) {
             $this->disconnect();
         }
 
@@ -195,9 +196,10 @@ class Socket implements Transport
      */
     protected function connect(Request $request)
     {
-        $host = $request->uri()->getHost();
-        $port = $request->uri()->getPort();
-        $isSecure = ($request->uri()->getScheme() == 'https');
+        $uri  = $request->getUri();
+        $host = $uri->getHost();
+        $port = $uri->getPort();
+        $isSecure = ($uri->getScheme() == 'https');
         $wrapper  = 'tcp://';
 
         if (! $port) {
@@ -289,10 +291,10 @@ class Socket implements Transport
         // Write request headers
         $this->log("Sending request headers", Logger::INFO);
 
-        $requestUri = $request->uri()->getPath();
+        $requestUri = $request->getUri()->getPath();
         if (! $requestUri) $requestUri = '/';
 
-        if ($query = $request->uri()->getQuery()) {
+        if ($query = $request->getUri()->getQuery()) {
             $requestUri .= "?$query";
         }
 
@@ -301,7 +303,7 @@ class Socket implements Transport
     	$headers = $request->getMethod() . " " .
                    $requestUri . " " .
                    "HTTP/" . $request->getVersion() . "\r\n" .
-                   $request->headers()->toString() . "\r\n";
+                   $request->getHeaders()->toString() . "\r\n";
 
         if (! fwrite($this->socket, $headers)) {
             throw new Exception\ConnectionException("Failed writing request headers to $this->connectedTo");
@@ -321,13 +323,13 @@ class Socket implements Transport
      */
     protected function prepareExtraHeaders(Request $request)
     {
-        $headers = $request->headers();
+        $headers = $request->getHeaders();
 
         if (! $headers->has('host')) {
-            $host = $request->uri()->getHost();
+            $host = $request->getUri()->getHost();
             if ($host) {
-                $scheme = $request->uri()->getScheme();
-                $port = $request->uri()->getPort();
+                $scheme = $request->getUri()->getScheme();
+                $port = $request->getUri()->getPort();
                 if (($scheme == 'http' && $port != 80) ||
                 ($scheme == 'https' && $port != 443)) {
                     $host .= ":$port";
@@ -412,7 +414,7 @@ class Socket implements Transport
     protected function readResponseHeaders(Response $response)
     {
         $header = null;
-        $response->headers()->clearHeaders();
+        $response->getHeaders()->clearHeaders();
 
         $this->log("Reading response headers", Logger::DEBUG);
         while (! feof($this->socket)) {
@@ -429,7 +431,7 @@ class Socket implements Transport
                 $name = trim($name);
                 $value = trim($value);
 
-                $response->headers()->addHeaderLine($name, $value);
+                $response->getHeaders()->addHeaderLine($name, $value);
 
                 $this->log("Got HTTP response header: $name", Logger::DEBUG);
             } else {
@@ -462,11 +464,11 @@ class Socket implements Transport
         }
         */
 
-        $this->handleContentEncoding($response, $response->headers()->get('content-encoding'));
+        $this->handleContentEncoding($response, $response->getHeaders()->get('content-encoding'));
 
         // Read body based on provided headers
-        if ($response->headers()->has('transfer-encoding')) {
-            $transferEncoding = $response->headers()->get('transfer-encoding');
+        if ($response->getHeaders()->has('transfer-encoding')) {
+            $transferEncoding = $response->getHeaders()->get('transfer-encoding');
             if ($transferEncoding->getFieldValue() != 'chunked') {
                 throw new Exception\ProtocolException("Unknown content transfer encoding: {$transferEncoding->getFieldValue()}");
             }
@@ -474,10 +476,10 @@ class Socket implements Transport
             // Read chunked body
             $this->log("Reading repsonse body using chunked transfer encoding", Logger::INFO);
             $response->setContent($this->readChunkedBody());
-            $response->headers()->removeHeader($transferEncoding);
+            $response->getHeaders()->removeHeader($transferEncoding);
 
-        } elseif ($response->headers()->has('content-length')) {
-            $length = (int) $response->headers()->get('content-length')->getFieldValue();
+        } elseif ($response->getHeaders()->has('content-length')) {
+            $length = (int) $response->getHeaders()->get('content-length')->getFieldValue();
             $this->log("Reading repsonse body based on provided length of $length bytes", Logger::INFO);
             $response->setContent($this->readBodyContentLength($length));
 
@@ -512,7 +514,7 @@ class Socket implements Transport
 
         if (isset(static::$contentEncodingFilters[$contentEnc])) {
             $this->contentEncodingFilter = new static::$contentEncodingFilters[$contentEnc];
-            $response->headers()->removeHeader($header);
+            $response->getHeaders()->removeHeader($header);
         } else {
             $this->contentEncodingFilter = new Filter\Identity();
             $this->log("Unknown Content-Encoding: $contentEnc", Logger::NOTICE);

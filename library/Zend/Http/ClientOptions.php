@@ -2,10 +2,10 @@
 
 namespace Zend\Http;
 
-use Zend\Stdlib\Options,
+use Zend\Stdlib\AbstractOptions,
     Zend\Http\Transport\Options as TransportOptions;
 
-class ClientOptions extends Options
+class ClientOptions extends AbstractOptions
 {
     /**
      * Maximal number of HTTP redirects to follow for a single request
