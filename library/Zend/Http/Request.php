@@ -1,12 +1,21 @@
 <?php
+/**
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ * @package   Zend_Http
+ */
 
 namespace Zend\Http;
 
-use Zend\Stdlib\RequestInterface,
-    Zend\Stdlib\Message,
-    Zend\Stdlib\ParametersInterface,
-    Zend\Stdlib\Parameters,
-    Zend\Uri\Http as HttpUri;
+use Zend\Stdlib\Message;
+use Zend\Stdlib\Parameters;
+use Zend\Stdlib\ParametersInterface;
+use Zend\Stdlib\RequestInterface;
+use Zend\Uri\Exception as ExceptionUri;
+use Zend\Uri\Http as HttpUri;
 
 class Request extends Message implements RequestInterface
 {
@@ -183,7 +192,7 @@ class Request extends Message implements RequestInterface
         if (is_string($uri)) {
             try {
                 $uri = new HttpUri($uri);
-            } catch (Exception\InvalidUriPartException $e) {
+            } catch (ExceptionUri\InvalidUriPartException $e) {
                 throw new Exception\InvalidArgumentException(
                         sprintf('Invalid URI passed as string (%s)', (string) $uri),
                         $e->getCode(),
@@ -311,9 +320,9 @@ class Request extends Message implements RequestInterface
     }
 
     /**
-     * Return the Cookie header, this is the same as calling $request->headers()->get('Cookie');
+     * Return the Cookie header, this is the same as calling $request->getHeaders()->get('Cookie');
      *
-     * @convenience $request->headers()->get('Cookie');
+     * @convenience $request->getHeaders()->get('Cookie');
      * @return Header\Cookie
      */
     public function getCookie()
@@ -323,7 +332,7 @@ class Request extends Message implements RequestInterface
 
     /**
      * Provide an alternate Parameter Container implementation for headers in this object, (this is NOT the
-     * primary API for value setting, for that see headers())
+     * primary API for value setting, for that see getHeaders())
      *
      * @param \Zend\Http\Headers $headers
      * @return \Zend\Http\Request

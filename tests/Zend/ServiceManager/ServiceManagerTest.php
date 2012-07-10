@@ -1,4 +1,12 @@
 <?php
+/**
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/zf2 for the canonical source repository
+ * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ * @package   Zend_ServiceManager
+ */
 
 namespace ZendTest\ServiceManager;
 
@@ -377,7 +385,7 @@ class ServiceManagerTest extends \PHPUnit_Framework_TestCase
         $this->serviceManager->setService('foo', 'bar');
         $scopedServiceManager = $this->serviceManager->createScopedServiceManager();
         $this->assertNotSame($this->serviceManager, $scopedServiceManager);
-        $this->assertFalse($scopedServiceManager->has('foo', false));
+        $this->assertFalse($scopedServiceManager->has('foo', true, false));
 
         $this->assertContains($this->serviceManager, $this->readAttribute($scopedServiceManager, 'peeringServiceManagers'));
 
@@ -434,7 +442,7 @@ class ServiceManagerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException Zend\ServiceManager\Exception\InvalidServiceNameException
+     * @expectedException Zend\ServiceManager\Exception\ServiceNotFoundException
      */
     public function testCannotUseUnknownServiceNameForAbstractFactory()
     {
@@ -477,5 +485,18 @@ class ServiceManagerTest extends \PHPUnit_Framework_TestCase
         $this->serviceManager->setAllowOverride(false);
         // should throw an exception because 'foo' already exists in the service manager
         $this->serviceManager->setAlias('foo', 'bar');
+    }
+
+    /**
+     * @covers Zend\ServiceManager\ServiceManager::createFromAbstractFactory
+     * @covers Zend\ServiceManager\ServiceManager::has
+     */
+    public function testWillNotCreateCircularReferences()
+    {
+        $abstractFactory = new TestAsset\CircularDependencyAbstractFactory();
+        $sm = new ServiceManager();
+        $sm->addAbstractFactory($abstractFactory);
+        $foo = $sm->get('foo');
+        $this->assertSame($abstractFactory->expectedInstance, $foo);
     }
 }
