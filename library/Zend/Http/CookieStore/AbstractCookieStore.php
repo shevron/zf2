@@ -44,7 +44,7 @@ abstract class AbstractCookieStore implements \IteratorAggregate
      */
     public function readCookiesFromResponse(Response $response, HttpUri $uri)
     {
-        $cookies = $response->headers()->get('Set-Cookie');
+        $cookies = $response->getHeaders()->get('Set-Cookie');
         if ($cookies) {
             foreach($cookies as $cookieHeader) {
                 $this->addCookieFromHeader($cookieHeader, $uri);
@@ -63,7 +63,7 @@ abstract class AbstractCookieStore implements \IteratorAggregate
      */
     public function getCookiesForRequest(Request $request)
     {
-        $cookies = $this->getMatchingCookies($request->uri());
+        $cookies = $this->getMatchingCookies($request->getUri());
         return CookieHeader::fromSetCookieArray($cookies);
     }
 

@@ -402,28 +402,28 @@ class Client implements DispatchableInterface
     {
         foreach($this->headers() as $header) {
             $key = $header->getFieldName();
-            if (! $request->headers()->has($key)) {
-                $request->headers()->addHeader($header);
+            if (! $request->getHeaders()->has($key)) {
+                $request->getHeaders()->addHeader($header);
             }
         }
 
-        $existingCookies = $request->cookie(); /* @var Zend\Http\Header\Cookie */
+        $existingCookies = $request->getCookie(); /* @var Zend\Http\Header\Cookie */
         $cookieHeader = $this->getCookieStore()->getCookiesForRequest($request);
 
         if ($existingCookies) {
-            $request->headers()->removeHeader($existingCookies);
+            $request->getHeaders()->removeHeader($existingCookies);
             foreach($existingCookies as $key => $value) {
                 $cookieHeader[$key] = $value;
             }
         }
 
         if (count($cookieHeader)) {
-            $request->headers()->addHeader($cookieHeader);
+            $request->getHeaders()->addHeader($cookieHeader);
         }
 
         // Handle POST content
         if ($request->getContent() instanceof Entity\FormDataHandler) {
-            $request->getContent()->prepareRequestHeaders($request->headers());
+            $request->getContent()->prepareRequestHeaders($request->getHeaders());
         }
     }
 
@@ -439,7 +439,7 @@ class Client implements DispatchableInterface
      */
     protected function handleResponse(Response $response, Request $request)
     {
-        $this->getCookieStore()->readCookiesFromResponse($response, $request->uri());
+        $this->getCookieStore()->readCookiesFromResponse($response, $request->getUri());
     }
 
     /**
